@@ -3,7 +3,7 @@ import sys
 import json
 
 textWrite=True
-is_pydroid=True
+is_pydroid=False
 if(is_pydroid):
     arg="python yxpHw 1585732 语文".split(" ")
 else:
@@ -152,6 +152,10 @@ elif len(arg)==4:
                 else:
                     text=text+"没有没写的作业。"
             else:
+                if(int(nokjs["total_count"])>int(nokjs["per_page"])):
+                    rg=nokjs["per_page"]
+                else:
+                    rg=nokjs["total_count"]
                 for i in range(0,int(rg)):
                     if i==0:
                         text=text+"☛ 没写的作业（%s个）：\n"%(nokjs["total_count"])

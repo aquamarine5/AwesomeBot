@@ -15,21 +15,10 @@ import java.lang.Exception
 suspend fun main() {
 
     val qqId = 924410958L//Bot的QQ号，需为Long类型，在结尾处添加大写L
-    val password = "070304syz"//Bot的密码
+    val password = File("D:/Program Source/QQBOT/password.txt").readText()//Bot的密码
     val miraiBot = Bot(qqId, password){
         fileBasedDeviceInfo("device.json")
-    }.alsoLogin()//新建Bot并登录
-    /*
-    miraiBot.subscribeMessages {
-        "你好" reply "你好!"
-        case("at me") {
-            reply(At(sender as Member) + " 给爷爬 ")
-        }
-
-        (contains("舔") or contains("刘老板")) {
-            reply("刘老板太强了")
-        }
-    }*/
+    }.alsoLogin()
     val program="\"d:/Program Source/QQBOT/python/websocket.py\""
     val image="\"d:/Program Source/QQBOT/python/image.py\""
     val temp="D:/Program Source/QQBOT/python/Temp/temp.txt"

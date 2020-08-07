@@ -3,21 +3,25 @@ import sys
 import json
 
 textWrite=True
-
+is_pydroid=True
+if(is_pydroid):
+    arg="python yxpHw 1585732 语文".split(" ")
+else:
+    arg=sys.argv
 def yxpTimeGet():
-    url="http://e.anoah.com/api_dist/?q=json/ebag/System/getServerTime&info={}"
-    out=requests.get(url)
+    urlT="http://e.anoah.com/api_dist/?q=json/ebag/System/getServerTime&info={}"
+    out=requests.get(urlT)
     out=json.loads(out.text)
     return out["recordset"]["system_time"]
 def yxpName(uid):
-    url="https://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(uid,str(yxpTimeGet()))
-    return json.loads(requests.get(url).text)["recordset"]["real_name"]
+    urlN="https://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(uid,str(yxpTimeGet()))
+    return json.loads(requests.get(urlN).text)["recordset"]["real_name"]
 def yxpClassId(uid):
     return 0
 ####################################################### 
-if len(sys.argv)==3:
-    if sys.argv[1]=="yxpDCom":
-        url="http://e.anoah.com/api_cache/?q=json/icom/Dcom/getDCom&info={\"dcom_id\":%s}"%int(sys.argv[2])
+if len(arg)==3:
+    if arg[1]=="yxpDCom":
+        url="http://e.anoah.com/api_cache/?q=json/icom/Dcom/getDCom&info={\"dcom_id\":%s}"%int(arg[2])
         print(url)
         out=requests.get(url)
         out=json.loads(out.text)
@@ -31,8 +35,8 @@ if len(sys.argv)==3:
 活动名称：%s    
 描述：%s"""%(str(out["id"]),str(out["create_time"]),str(out["dcom_name"]),str(out["dcom_title"]),str(out["activity_name"]),str(out["description"]))
 ####################################################### 
-    elif sys.argv[1]=="yxpPic":
-        url="https://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(sys.argv[2],str(yxpTimeGet()))
+    elif arg[1]=="yxpPic":
+        url="https://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(arg[2],str(yxpTimeGet()))
         out=requests.get(url)
         out=json.loads(out.text)
         urlPic="http://static.anoah.com"
@@ -50,15 +54,15 @@ if len(sys.argv)==3:
         Pic2=requests.get(urlPic2)
         with open(r"D:\Program Source\QQBOT\python\Temp\FacePrivate.jpg","wb+") as f:
             f.write(Pic2.content)
-        text=yxpName(sys.argv[2])
+        text=yxpName(arg[2])
 #######################################################
-    elif sys.argv[1]=="yxpInfo":
+    elif arg[1]=="yxpInfo":
         time=yxpTimeGet()
-        urlHaoTiBen="https://e.anoah.com/api/?q=json/ebag5/Qtibook/readBookStatus&info={\"start_time\":\"2008-08-08+00:00:00\",\"user_id\":%s}&pmatsemit=%s"%(sys.argv[2],time)
-        urlClass="https://e.anoah.com/api/?q=json/ebag5/User/getUserClasses&info={\"userid\":%s}&pmatsemit=%s"%(sys.argv[2],time)
-        urlScore="https://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(sys.argv[2],time)
-        urlScore2="https://e.anoah.com/api/?q=json/ebag/user/score/score_count&info={\"userid\":%s}"%sys.argv[2]
-        urlScore3="https://e.anoah.com/api/?q=json/ebag/user/score/score_detail&info={\"userid\":%s,\"pagesize\":10,\"page\":1,\"start\":\"\",\"end\":\"\"}&pmatsemit=%s"%(sys.argv[2],time)
+        urlHaoTiBen="https://e.anoah.com/api/?q=json/ebag5/Qtibook/readBookStatus&info={\"start_time\":\"2008-08-08+00:00:00\",\"user_id\":%s}&pmatsemit=%s"%(arg[2],time)
+        urlClass="https://e.anoah.com/api/?q=json/ebag5/User/getUserClasses&info={\"userid\":%s}&pmatsemit=%s"%(arg[2],time)
+        urlScore="https://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(arg[2],time)
+        urlScore2="https://e.anoah.com/api/?q=json/ebag/user/score/score_count&info={\"userid\":%s}"%arg[2]
+        urlScore3="https://e.anoah.com/api/?q=json/ebag/user/score/score_detail&info={\"userid\":%s,\"pagesize\":10,\"page\":1,\"start\":\"\",\"end\":\"\"}&pmatsemit=%s"%(arg[2],time)
         HaoTi=json.loads(requests.get(urlHaoTiBen).text)
         Class=json.loads(requests.get(urlClass).text)
         ClassScore=""
@@ -68,7 +72,7 @@ if len(sys.argv)==3:
             else:
                 ClassScore=str(ClassScore)+","+str(Class["recordset"][t]["class_id"])
         urlClassIn="https://api2.anoah.com/jwt/user/classes/subjects?class_id=%s&pmatsemit=%s"%(ClassScore,time)
-        urlHomework="https://e.anoah.com/api/?q=json/ebag5/Homework/readHomeworkStat&info={\"to\":\"\",\"class_ids\":\"%s\",\"user_id\":%s,\"from\":\"\"}&pmatsemit=%s"%(ClassScore,sys.argv[2],time)
+        urlHomework="https://e.anoah.com/api/?q=json/ebag5/Homework/readHomeworkStat&info={\"to\":\"\",\"class_ids\":\"%s\",\"user_id\":%s,\"from\":\"\"}&pmatsemit=%s"%(ClassScore,arg[2],time)
         Score=json.loads(requests.get(urlScore).text)
         Score2=json.loads(requests.get(urlScore2).text)
         Score3=json.loads(requests.get(urlScore3).text)
@@ -76,20 +80,20 @@ if len(sys.argv)==3:
         Homework=json.loads(requests.get(urlHomework).text)
         #---------------------------------------------
 ####################################################### 
-elif len(sys.argv)==2:
-    if sys.argv[1]=="yxpTIME": 
+elif len(arg)==2:
+    if arg[1]=="yxpTIME": 
         text=yxpTimeGet()
-    elif sys.argv=="yxpJWT":
+    elif arg=="yxpJWT":
         urln="https://emessage.anoah.com/api/?q=json/jwt/Emessage/get_list_latest&info={\"message_types\":\"0,1,2\",\"user_id\":1585732}&pmatsemit="+str(yxpTimeGet())
         outn=requests.get(urln)
         text=outn.text
     else:
         text="Error"
 #######################################################
-elif len(sys.argv)==4:
-    if sys.argv[1]=="yxpHw":
+elif len(arg)==4:
+    if arg[1]=="yxpHw":
         time=yxpTimeGet()
-        urlClass="https://e.anoah.com/api/?q=json/ebag5/User/getUserClasses&info={\"userid\":%s}&pmatsemit=%s"%(sys.argv[2],time)
+        urlClass="https://e.anoah.com/api/?q=json/ebag5/User/getUserClasses&info={\"userid\":%s}&pmatsemit=%s"%(arg[2],time)
         Class=json.loads(requests.get(urlClass).text)
         ClassScore=""
         for t in range(0,len(Class["recordset"])):
@@ -98,21 +102,21 @@ elif len(sys.argv)==4:
             else:
                 ClassScore=str(ClassScore)+","+str(Class["recordset"][t]["class_id"])
         #---------------------------------------------
-        if  (sys.argv[3]=="语文"):classId=1
-        elif(sys.argv[3]=="数学"):classId=2
-        elif(sys.argv[3]=="英语"):classId=3
-        elif(sys.argv[3]=="历史"):classId=5
-        elif(sys.argv[3]=="地理"):classId=6
-        elif(sys.argv[3]=="生物"):classId=7
-        elif(sys.argv[3]=="物理"):classId=8
-        elif(sys.argv[3]=="美术"):classId=32
-        elif(sys.argv[3]=="信息"):classId=33
-        elif(sys.argv[3]=="音乐"):classId=14
-        elif(sys.argv[3]=="体育"):classId=23
-        elif(sys.argv[3]=="道法"):classId=437
+        if  (arg[3]=="语文"):classId=1
+        elif(arg[3]=="数学"):classId=2
+        elif(arg[3]=="英语"):classId=3
+        elif(arg[3]=="历史"):classId=5
+        elif(arg[3]=="地理"):classId=6
+        elif(arg[3]=="生物"):classId=7
+        elif(arg[3]=="物理"):classId=8
+        elif(arg[3]=="美术"):classId=32
+        elif(arg[3]=="信息"):classId=33
+        elif(arg[3]=="音乐"):classId=14
+        elif(arg[3]=="体育"):classId=23
+        elif(arg[3]=="道法"):classId=437
         #---------------------------------------------
-        urlNOK="http://api2.anoah.com/jwt/homework/publish/getListForStudent?user_id=%s&status=0&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=20&pmatsemit=%s"%(sys.argv[2],str(classId),ClassScore,time)
-        urlOk="http://api2.anoah.com/jwt/homework/publish/getListForStudent?user_id=%s&status=1&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=20&pmatsemit=%s"%(sys.argv[2],str(classId),ClassScore,time)
+        urlNOK="http://api2.anoah.com/jwt/homework/publish/getListForStudent?user_id=%s&status=0&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=20&pmatsemit=%s"%(arg[2],str(classId),ClassScore,time)
+        urlOk="http://api2.anoah.com/jwt/homework/publish/getListForStudent?user_id=%s&status=1&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=20&pmatsemit=%s"%(arg[2],str(classId),ClassScore,time)
         ok=json.loads(requests.get(urlOk).text.encode('utf-8').decode("unicode_escape"))
         nok=json.loads(requests.get(urlNOK).text.encode('utf-8').decode("unicode_escape"))
         if(ok["status"]==0):
@@ -121,7 +125,7 @@ elif len(sys.argv)==4:
         #---------------------------------------------
             okjs=ok["recordset"]
             nokjs=nok["recordset"]
-            text="这是"+yxpName(sys.argv[2])+"的"+sys.argv[3]+"作业情况：\n"
+            text="这是"+yxpName(arg[2])+"的"+arg[3]+"作业情况：\n"
             lists=okjs["lists"]
             noklists=nokjs["lists"]
             write=1

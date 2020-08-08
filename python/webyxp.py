@@ -5,7 +5,7 @@ import json
 textWrite=True
 is_pydroid=False
 if(is_pydroid):
-    arg="python yxpHw 1585732 语文".split(" ")
+    arg="python yxpRs 1585738 最新".split(" ")
 else:
     arg=sys.argv
 def yxpTimeGet():
@@ -106,12 +106,13 @@ elif len(arg)==4:
     if arg[1]=="yxpRs":
         Classid=yxpClassId(arg[2])
         if(arg[3]=="最新"):
-            subjectlist=[1,2,3,4,5,6,7,8,32,33,14,23,437]
-            subjectNamelist=["语文","数学","英语","化学（测试性功能）",'历史','地理','生物','物理','美术','信息','音乐','体育','道法']
+            subjectlist=[1,2,3,4,5,6,7,8,437,32,33,14,23]
+            subjectNamelist=["语文","数学","英语","化学（测试性功能）",'历史','地理','生物','物理','道法','美术','信息','音乐','体育']
             text="这是 "+yxpName(arg[2])+"的全科最近分数（仅显示已批改）：\n"
             for i in range(0,13):
                 url="http://e.anoah.com/api/?q=json/ebag5/Statistics/getStudentScoreInfo&info="\
-                    "{\"user_id\":%s,\"class_id\":\"%s\",\"type\":0,\"subject_id\":%s,\"pagesize\":10,\"page\":1,\"start_date\":\"\",\"end_date\":\"\"}&pmatsemit=%s"%(arg[2],Classid,subjectlist[i],yxpTimeGet())
+                    "{\"user_id\":%s,\"class_id\":\"%s\",\"type\":0,\"subject_id\":%s,\"pagesize\":1,\"page\":1,\"start_date\":\"\",\"end_date\":\"\"}&pmatsemit=%s"%\
+                        (arg[2],Classid,subjectlist[i],yxpTimeGet())
                 out=json.loads(requests.get(url).text)
                 if(out["recordset"]==""):
                     text=text+"☛ "+subjectNamelist[i]+"：无 已批改 成绩\n"
@@ -143,78 +144,121 @@ elif len(arg)==4:
             elif(arg[3]=="音乐"):subjectId=14
             elif(arg[3]=="体育"):subjectId=23
             elif(arg[3]=="道法"):subjectId=437
-            url="http://e.anoah.com/api/?q=json/ebag5/Statistics/getStudentScoreInfo&info={\"user_id\":%s,\"class_id\":\"%s\",\"type\":0,\"subject_id\":%s,\"pagesize\"10,\"page\":1,\"start_date\":\"\",\"end_date\":\"\"}&pmatsemit=%s"%(arg[2],yxpClassId(arg[2]),subjectId,yxpTimeGet())
+            url="http://e.anoah.com/api/?q=json/ebag5/Statistics/getStudentScoreInfo&info="\
+                    "{\"user_id\":%s,\"class_id\":\"%s\",\"type\":0,\"subject_id\":%s,\"pagesize\"10,\"page\":1,\"start_date\":\"\",\"end_date\":\"\"}&pmatsemit=%s"%\
+                    (arg[2],yxpClassId(arg[2]),subjectId,yxpTimeGet())
+    elif arg[1]=="yxpAs":
+        pass
 #######################################################
-    if arg[1]=="yxpHw":
+    elif arg[1]=="yxpHw":
         time=yxpTimeGet()
         #---------------------------------------------
-        if  (arg[3]=="语文"):subjectId=1 #
-        elif(arg[3]=="数学"):subjectId=2 #
-        elif(arg[3]=="英语"):subjectId=3 #
-        elif(arg[3]=="历史"):subjectId=5 #
-        elif(arg[3]=="地理"):subjectId=6
-        elif(arg[3]=="生物"):subjectId=7 #
-        elif(arg[3]=="物理"):subjectId=8
-        elif(arg[3]=="美术"):subjectId=32
-        elif(arg[3]=="信息"):subjectId=33
-        elif(arg[3]=="音乐"):subjectId=14
-        elif(arg[3]=="体育"):subjectId=23
-        elif(arg[3]=="道法"):subjectId=437
-        #---------------------------------------------
-        urlNOK="http://api2.anoah.com/jwt/homework/publish/getListForStudent?user_id=%s&status=0&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=20&pmatsemit=%s"%(arg[2],str(subjectId),yxpClassId(arg[2]),time)
-        urlOk="http://api2.anoah.com/jwt/homework/publish/getListForStudent?user_id=%s&status=1&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=20&pmatsemit=%s"%(arg[2],str(subjectId),yxpClassId(arg[2]),time)
-        ok=json.loads(requests.get(urlOk).text.encode('utf-8').decode("unicode_escape"))
-        nok=json.loads(requests.get(urlNOK).text.encode('utf-8').decode("unicode_escape"))
-        if(ok["status"]==0):
-            text=ok["msg"]
+        if(arg[3]=="没写"):
+            urlN="http://api2.anoah.com/jwt/homework/publish/getUndoNumForStudent?"\
+                    "user_id=%s&class_id=%s&from_date=&to_date=&pmatsemit=%s"%\
+                    (arg[2],yxpClassId(arg[2]),yxpTimeGet())
+            outN=json.loads(requests.get(urlN).text)
+            outN=outN["recordset"]
+            text="这是 %s 的没写作业：\n"%(yxpName(arg[2]))
+            n=0
+            for i in range(0,len(outN)):
+                urlNok="http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
+                    "user_id=%s&status=0&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=-1&pmatsemit=%s"%\
+                    (arg[2],outN[i]["edu_subject_id"],yxpClassId(arg[2]),time)
+                outNok=json.loads(requests.get(urlNok).text.encode("utf-8").decode("unicode_escape"))
+                outNok=outNok["recordset"]
+                if  (outN[i]["edu_subject_id"]==1  ):subjectId="语文" #
+                elif(outN[i]["edu_subject_id"]==2  ):subjectId="数学" #
+                elif(outN[i]["edu_subject_id"]==3  ):subjectId="英语" #
+                elif(outN[i]["edu_subject_id"]==5  ):subjectId="历史" #
+                elif(outN[i]["edu_subject_id"]==6  ):subjectId="地理"
+                elif(outN[i]["edu_subject_id"]==7  ):subjectId="生物" #
+                elif(outN[i]["edu_subject_id"]==8  ):subjectId="物理"
+                elif(outN[i]["edu_subject_id"]==32 ):subjectId="美术"
+                elif(outN[i]["edu_subject_id"]==33 ):subjectId="信息"
+                elif(outN[i]["edu_subject_id"]==14 ):subjectId="音乐"
+                elif(outN[i]["edu_subject_id"]==23 ):subjectId="体育"
+                elif(outN[i]["edu_subject_id"]==437):subjectId="道法"
+                for j in range(0,outN[i]["undo"]):
+                    n=n+1
+                    text=text+str(n)+" "+subjectId+" "+outNok["lists"][j]["title"]+" "+outNok["lists"][j]["teacher_name"]+"\n"
+            text=text+"可使用 yxp答案 [作业前数字] 查看这个作业的答案"
+            #---------------------------------------------
         else:
-        #---------------------------------------------
-            okjs=ok["recordset"]
-            nokjs=nok["recordset"]
-            text="这是"+yxpName(arg[2])+"的"+arg[3]+"作业情况：\n"
-            lists=okjs["lists"]
-            noklists=nokjs["lists"]
-            write=1
-            if(okjs["total_count"]==0):
-                text="没有写了的作业。\n"
-                write=0
+            if  (arg[3]=="语文"):subjectId=1 #
+            elif(arg[3]=="数学"):subjectId=2 #
+            elif(arg[3]=="英语"):subjectId=3 #
+            elif(arg[3]=="历史"):subjectId=5 #
+            elif(arg[3]=="地理"):subjectId=6
+            elif(arg[3]=="生物"):subjectId=7 #
+            elif(arg[3]=="物理"):subjectId=8
+            elif(arg[3]=="美术"):subjectId=32
+            elif(arg[3]=="信息"):subjectId=33
+            elif(arg[3]=="音乐"):subjectId=14
+            elif(arg[3]=="体育"):subjectId=23
+            elif(arg[3]=="道法"):subjectId=437
+            #---------------------------------------------
+            urlNOK="http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
+                "user_id=%s&status=0&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=20&pmatsemit=%s"%\
+                (arg[2],str(subjectId),yxpClassId(arg[2]),time)
+            urlOk="http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
+                "user_id=%s&status=1&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=20&pmatsemit=%s"%\
+                (arg[2],str(subjectId),yxpClassId(arg[2]),time)
+            ok=json.loads(requests.get(urlOk).text.encode('utf-8').decode("unicode_escape"))
+            nok=json.loads(requests.get(urlNOK).text.encode('utf-8').decode("unicode_escape"))
+            if(ok["status"]==0):
+                text=ok["msg"]
             else:
-                if(int(okjs["total_count"])>int(okjs["per_page"])):
-                    rg=okjs["per_page"]
+            #---------------------------------------------
+                okjs=ok["recordset"]
+                nokjs=nok["recordset"]
+                text="这是"+yxpName(arg[2])+"的"+arg[3]+"作业情况：\n"
+                lists=okjs["lists"]
+                noklists=nokjs["lists"]
+                write=1
+                if(okjs["total_count"]==0):
+                    text="没有写了的作业。\n"
+                    write=0
                 else:
-                    rg=okjs["total_count"]
-                for i in range(0,int(rg)):
-                    if i==0:
-                        text=text+"☛ 写了的作业（%s个）：\n"%(okjs["total_count"])
-                    text=text+lists[i]["start_time"]+" "+lists[i]["title"]+" "+lists[i]["subject_name"]+lists[i]["teacher_name"]#+"\n作业ID："+lists[i]["course_hour_publish_id"]
-                    if not i==int(okjs["total_count"]):
-                        text=text+"\n"
-                if (int(okjs["per_page"])<int(okjs["total_count"])):
-                    text=text+"※ 仅显示%s个，但一共有%s个作业完成\n"%(int(okjs["per_page"]),int(okjs["total_count"]))
-            if(nokjs["total_count"]==0):
-                if(write==0):
-                    text="老师没留过作业。"
+                    if(int(okjs["total_count"])>int(okjs["per_page"])):
+                        rg=okjs["per_page"]
+                    else:
+                        rg=okjs["total_count"]
+                    for i in range(0,int(rg)):
+                        if i==0:
+                            text=text+"☛ 写了的作业（%s个）：\n"%(okjs["total_count"])
+                        text=text+lists[i]["start_time"]+" "+lists[i]["title"]+" "+lists[i]["subject_name"]+lists[i]["teacher_name"]#+"\n作业ID："+lists[i]["course_hour_publish_id"]
+                        if not i==int(okjs["total_count"]):
+                            text=text+"\n"
+                    if (int(okjs["per_page"])<int(okjs["total_count"])):
+                        text=text+"※ 仅显示%s个，但一共有%s个作业完成\n"%(int(okjs["per_page"]),int(okjs["total_count"]))
+                if(nokjs["total_count"]==0):
+                    if(write==0):
+                        text="老师没留过作业。"
+                    else:
+                        text=text+"没有没写的作业。"
                 else:
-                    text=text+"没有没写的作业。"
-            else:
-                if(int(nokjs["total_count"])>int(nokjs["per_page"])):
-                    rg=nokjs["per_page"]
-                else:
-                    rg=nokjs["total_count"]
-                for i in range(0,int(rg)):
-                    if i==0:
-                        text=text+"☛ 没写的作业（%s个）：\n"%(nokjs["total_count"])
-                    text=text+noklists[i]["start_time"]+" "+noklists[i]["title"]+" "+noklists[i]["subject_name"]+noklists[i]["teacher_name"]#+"\n作业ID："+noklists[i]["course_hour_publish_id"]
-                    if not i==int(okjs["total_count"]):
-                        text=text+"\n"
-                if (int(nokjs["per_page"])<int(nokjs["total_count"])):
-                    text=text+"※ 仅显示%s个，但一共有%s个作业未完成"%(int(nokjs["per_page"]),int(nokjs["total_count"]))
+                    if(int(nokjs["total_count"])>int(nokjs["per_page"])):
+                        rg=nokjs["per_page"]
+                    else:
+                        rg=nokjs["total_count"]
+                    for i in range(0,int(rg)):
+                        if i==0:
+                            text=text+"☛ 没写的作业（%s个）：\n"%(nokjs["total_count"])
+                        text=text+noklists[i]["start_time"]+" "+noklists[i]["title"]+" "+noklists[i]["subject_name"]+noklists[i]["teacher_name"]#+"\n作业ID："+noklists[i]["course_hour_publish_id"]
+                        if not i==int(okjs["total_count"]):
+                            text=text+"\n"
+                    if (int(nokjs["per_page"])<int(nokjs["total_count"])):
+                        text=text+"※ 仅显示%s个，但一共有%s个作业未完成"%(int(nokjs["per_page"]),int(nokjs["total_count"]))
 #######################################################
 else:
     text="参数不够"
 ####################################################### 
 with open(r"D:\Program Source\QQBOT\python\Temp\temp.txt","w+",encoding="UTF-8") as f:
     if(textWrite):
-        text=str(text)
-        f.write(text)
-        print(text)
+    	if(is_pydroid):print(text)
+    	else:
+             text=str(text)
+             f.write(text)
+             print(text)
+

@@ -31,7 +31,7 @@ suspend fun main() {
         val ct=message.split(" ")
         when(ct[0]){
             "yxpPRs","yxpPrs","yxp批改成绩","yxpprs"->{
-                val command="python $program yxpRs ${ct[1]} ${ct[2]}
+                val command="python $program yxpRs ${ct[1]} ${ct[2]}"
                 val out.command.execute()
                 out.waitfor()
                 reply(File(temp).readText()) }

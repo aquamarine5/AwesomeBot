@@ -10,7 +10,6 @@ import java.io.File
 import java.lang.Exception
 
 
-//@InternalAPI
 @InternalCoroutinesApi
 suspend fun main() {
 
@@ -19,16 +18,23 @@ suspend fun main() {
     val miraiBot = Bot(qqId, password){
         fileBasedDeviceInfo("device.json")
     }.alsoLogin()
+
     val program="\"d:/Program Source/QQBOT/python/websocket.py\""
     val image="\"d:/Program Source/QQBOT/python/image.py\""
     val temp="D:/Program Source/QQBOT/python/Temp/temp.txt"
     val imageTemp="D:/Program Source/QQBOT/python/Temp/temp.jpg"
     val imagePublic="D:/Program Source/QQBOT/python/Temp/FacePublic.jpg"
     val imagePrivate="D:/Program Source/QQBOT/python/Temp/FacePrivate.jpg"
+
     miraiBot.subscribeAlways<GroupMessageEvent> { event ->
         val message=event.message.content
         val ct=message.split(" ")
         when(ct[0]){
+            "yxpPRs","yxpPrs","yxp批改成绩","yxpprs"->{
+                val command="python $program yxpRs ${ct[1]} ${ct[2]}
+                val out.command.execute()
+                out.waitfor()
+                reply(File(temp).readText()) }
             "yxpPic","yxppic","yxp照片"->{
                 val command="python $program yxpPic ${ct[1]}"
                 val out=command.execute()
@@ -51,7 +57,7 @@ suspend fun main() {
                     println(ct[0])
                 }
             }
-            "yxpHW","yxp作业","yxpHw"->{
+            "yxpHW","yxp作业","yxpHw","yxp作业完成"->{
                 if(ct.size==3){
                     when (ct[2]){
                         "语文","数学","英语","历史","道法","生物","地理","信息","物理","体育","美术","音乐"->{
@@ -69,7 +75,7 @@ suspend fun main() {
                     reply("给的东西不够或者多了，例子：yxp作业 1585745 生物")
                 }
             }
-            "yxprd","yxp随机","yxpRand"->{
+            "yxprd","yxp随机","yxpRand","yxp随机作业"->{
                 val command="python $program yxpDCom ${ct[1]}"
                 val out=command.execute()
                 out.waitFor()
@@ -116,10 +122,6 @@ suspend fun main() {
                     }
                 }
             }
-        }
-        if(event.message.content.startsWith("resend "))
-        {
-
         }
     }
     miraiBot.join() // 等待 Bot 离线, 避免主线程退出

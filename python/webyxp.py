@@ -148,7 +148,77 @@ elif len(arg)==4:
                     "{\"user_id\":%s,\"class_id\":\"%s\",\"type\":0,\"subject_id\":%s,\"pagesize\"10,\"page\":1,\"start_date\":\"\",\"end_date\":\"\"}&pmatsemit=%s"%\
                     (arg[2],yxpClassId(arg[2]),subjectId,yxpTimeGet())
     elif arg[1]=="yxpAs":
-        pass
+        classname=arg[3][:2]
+        classIndex=arg[3][2:]
+        if  (classname=="语文"):subjectId=1 #
+        elif(classname=="数学"):subjectId=2 #
+        elif(classname=="英语"):subjectId=3 #
+        elif(classname=="历史"):subjectId=5 #
+        elif(classname=="地理"):subjectId=6
+        elif(classname=="生物"):subjectId=7 #
+        elif(classname=="物理"):subjectId=8
+        elif(classname=="美术"):subjectId=32
+        elif(classname=="信息"):subjectId=33
+        elif(classname=="音乐"):subjectId=14
+        elif(classname=="体育"):subjectId=23
+        elif(classname=="道法"):subjectId=437
+        urlClassF="http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
+            "user_id=%s&status=0&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=-1&pmatsemit=%s"%\
+            (arg[2],subjectId,yxpClassId(arg[2]),yxpTimeGet())
+        outF=json.loads(requests.get(urlClassF).text)["recordset"]["lists"][int(classIndex)]["course_hour_publish_id"]
+        urlClassid="http://api2.anoah.com/jwt/homework/stat/basicForStudent?"\
+            "user_id=%s&publish_id=%s&pmatsemit=%s"%(arg[2],outF,yxpTimeGet())
+        outQid=json.loads(requests.get(urlClassid).text)["recordset"]
+        Qid=outQid["course_resource_list"][0]["qti_id"]
+        urlAnswer="http://e.anoah.com/api_cache/?q=json/Qti/get&info="\
+            "{\"param\":{\"qid\":\"test:%s\",\"dataType\":1},\"pulishId\":\"%s\"}"%(Qid,outF)
+        print(urlAnswer)
+        outAnswer=json.loads(requests.get(urlAnswer).text)
+        answer=""
+        text="这是%s的作业答案：\n不建议滥用\n"%(outQid["title"])
+        outAnswer=outAnswer["section"][0]["items"]
+        for i in range(0,len(outAnswer)):
+            items=outAnswer[i]
+            textP=items["prompt"]
+            textP=textP.replace("<p>","")
+            textP=textP.replace(r"</p>","")
+            textP=textP.replace("<span class=\"spot\">","")
+            textP=textP.replace(r"</span>","")
+            if "answer" in items:
+                if (len(textP)>10):
+                    text=text+str(i+1)+" "+textP[:10]+"..."+"-> "
+                else:
+                    text=text+str(i+1)+" "+textP[:10]+"-> "
+                if isinstance(items["answer"],str):
+                    answer=items["answer"]
+                    answer=answer.replace("<p>","")
+                    answer=answer.replace(r"</p>","")
+                    answer=answer.replace("<span class=\"spot\">","")
+                    answer=answer.replace(r"</span>","")
+                    text=text+answer+"\n"
+                else:
+                    answerL=""
+                    for j in items["answer"]:
+                        answerL=answerL+j[0]
+                        if not j==items["answer"][-1]:
+                            answerL=answerL+"，"
+                    text=text+answerL+"\n"
+            else:
+                for j in range(0,len(items["items"])):
+                    textP=items["items"][j]["prompt"]
+                    textP=textP.replace("<p>","")
+                    textP=textP.replace(r"</p>","")
+                    textP=textP.replace("<span class=\"spot\">","")
+                    textP=textP.replace(r"</span>","")
+                    answer=items["items"][j]["answer"]
+                    answer=answer.replace("<p>","")
+                    answer=answer.replace(r"</p>","")
+                    answer=answer.replace("<span class=\"spot\">","")
+                    answer=answer.replace(r"</span>","")
+                    if (len(textP)>10):
+                        text=text+str(i+1)+"."+str(j+1)+" "+textP[:10]+"..."+"-> "+answer+"\n"
+                    else:
+                        text=text+str(i+1)+"."+str(j+1)+" "+textP[:10]+"-> "+answer+"\n"
 #######################################################
     elif arg[1]=="yxpHw":
         time=yxpTimeGet()
@@ -181,8 +251,8 @@ elif len(arg)==4:
                 elif(outN[i]["edu_subject_id"]==437):subjectId="道法"
                 for j in range(0,outN[i]["undo"]):
                     n=n+1
-                    text=text+str(n)+" "+subjectId+" "+outNok["lists"][j]["title"]+" "+outNok["lists"][j]["teacher_name"]+"\n"
-            text=text+"可使用 yxp答案 [作业前数字] 查看这个作业的答案"
+                    text=text+str(j+1)+" "+subjectId+" "+outNok["lists"][j]["title"]+" "+outNok["lists"][j]["teacher_name"]+"\n"
+            text=text+"共%s个未写作业。\n可使用 yxp答案 [用户id] [科目] [作业前数字] 查看这个作业的答案"%str(n)
             #---------------------------------------------
         else:
             if  (arg[3]=="语文"):subjectId=1 #

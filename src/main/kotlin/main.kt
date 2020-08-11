@@ -19,7 +19,7 @@ suspend fun main() {
         fileBasedDeviceInfo("device.json")
     }.alsoLogin()
 
-    val program="\"d:/Program Source/QQBOT/python/websocket.py\""
+    val program="\"d:/Program Source/QQBOT/python/webyxp.py\""
     val image="\"d:/Program Source/QQBOT/python/image.py\""
     val temp="D:/Program Source/QQBOT/python/Temp/temp.txt"
     val imageTemp="D:/Program Source/QQBOT/python/Temp/temp.jpg"
@@ -30,10 +30,23 @@ suspend fun main() {
         val message=event.message.content
         val ct=message.split(" ")
         when(ct[0]){
+            "yxpLt","yxp老师评语"->{
+                val command="python $program yxpLt ${ct[1]} ${ct[2]}"
+                val out=command.execute()
+                out.waitFor()
+                reply(File(temp).readText())
+            }
             "yxpPRs","yxpPrs","yxp批改成绩","yxpprs"->{
                 val command="python $program yxpRs ${ct[1]} ${ct[2]}"
-                val out.command.execute()
-                out.waitfor()
+                val out=command.execute()
+                out.waitFor()
+                reply(File(temp).readText()) }
+
+            "yxpAs","yxp答案"->{
+                val command="python $program yxpAs ${ct[1]} ${ct[2]}${ct[3]}"
+                println(command)
+                val out=command.execute()
+                out.waitFor()
                 reply(File(temp).readText()) }
             "yxpPic","yxppic","yxp照片"->{
                 val command="python $program yxpPic ${ct[1]}"

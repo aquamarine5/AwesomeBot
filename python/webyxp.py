@@ -186,74 +186,69 @@ elif len(arg)==4:
         urlClassid="http://api2.anoah.com/jwt/homework/stat/basicForStudent?"\
             "user_id=%s&publish_id=%s&pmatsemit=%s"%(arg[2],outF,yxpTimeGet())
         outQid=json.loads(requests.get(urlClassid).text)["recordset"]
-        Qid=outQid["course_resource_list"][0]["qti_id"]
-        urlAnswer="http://e.anoah.com/api_cache/?q=json/Qti/get&info="\
-            "{\"param\":{\"qid\":\"test:%s\",\"dataType\":1},\"pulishId\":\"%s\"}"%(Qid,outF)
-        urlAnswerUt="http://e.anoah.com/api_cache/?q=json/Qti/get&info="\
-            "{\"param\":{\"qid\":\"%s\",\"dataType\":1},\"pulishId\":\"%s\"}"%(Qid,outF)
-        outAnswer=json.loads(requests.get(urlAnswer).text)
-        if outAnswer==[]:
-            outAnswer=json.loads(requests.get(urlAnswerUt).text)
-        else:
-            outAnswer=outAnswer["section"][0]["items"]
         answer=""
         Ut=False
         number=0
         text="这是%s的作业答案：\n不建议滥用\n"%(outQid["title"])
         #---------------------------------------------
         for csid in range(0,outQid["course_resource_count"]):
-            Qid=outQid["course_resource_list"][csid]["qti_id"]
-            urlAnswer="http://e.anoah.com/api_cache/?q=json/Qti/get&info="\
-                "{\"param\":{\"qid\":\"test:%s\",\"dataType\":1},\"pulishId\":\"%s\"}"%(Qid,outF)
-            urlAnswerUt="http://e.anoah.com/api_cache/?q=json/Qti/get&info="\
-                "{\"param\":{\"qid\":\"%s\",\"dataType\":1},\"pulishId\":\"%s\"}"%(Qid,outF)
-            outAnswer=json.loads(requests.get(urlAnswer).text)
-            if outAnswer==[]:
-                outAnswer=json.loads(requests.get(urlAnswerUt).text)
-                Ut=True
-                fori=1
-            else:
-                outAnswer=outAnswer["section"][0]["items"]
-                Ut=False
-                fori=len(outAnswer)
-            for i in range(0,fori):
-                number=number+1
-                if not Ut:
-                    items=outAnswer[i]
+            if(outQid["course_resource_list"][csid]["icom_name"]=="互动试题"):
+                Qid=outQid["course_resource_list"][csid]["qti_id"]
+                urlAnswer="http://e.anoah.com/api_cache/?q=json/Qti/get&info="\
+                    "{\"param\":{\"qid\":\"test:%s\",\"dataType\":1},\"pulishId\":\"%s\"}"%(Qid,outF)
+                urlAnswerUt="http://e.anoah.com/api_cache/?q=json/Qti/get&info="\
+                    "{\"param\":{\"qid\":\"%s\",\"dataType\":1},\"pulishId\":\"%s\"}"%(Qid,outF)
+                outAnswer=json.loads(requests.get(urlAnswer).text)
+                if outAnswer==[]:
+                    outAnswer=json.loads(requests.get(urlAnswerUt).text)
+                    Ut=True
+                    fori=1
                 else:
-                    items=outAnswer
-                textP=yxpToText(items["prompt"])
-                if "answer" in items:
-                    if (len(textP)>10):
-                        text=text+str(number)+" "+textP[:10]+"..."+"-> "
+                    outAnswer=outAnswer["section"][0]["items"]
+                    Ut=False
+                    fori=len(outAnswer)
+                for i in range(0,fori):
+                    number=number+1
+                    if not Ut:
+                        items=outAnswer[i]
                     else:
-                        text=text+str(number)+" "+textP[:10]+"-> "
-                    if isinstance(items["answer"],str):
-                        answer=yxpToText(items["answer"])
-                        text=text+answer+"\n"
-                    else:
-                        answerL=""
-                        for j in items["answer"]:
-                            answerL=answerL+j[0]
-                            if not j==items["answer"][-1]:
-                                answerL=answerL+"，"
-                        text=text+answerL+"\n"
-                #---------------------------------------------
-                else:
-                    for j in range(0,len(items["items"])):
-                        textP=yxpToText(items["items"][j]["prompt"])
-                        if isinstance(items["items"][j]["answer"],str):
-                            answer=yxpToText(items["items"][j]["answer"])
-                        else:
-                            answer=""
-                            for j in items["items"][j]["answer"]:
-                                answer=answer+j[0]
-                                if not j==items["items"][j]["answer"][-1]:
-                                    answer=answer+"，"
+                        items=outAnswer
+                    textP=yxpToText(items["prompt"])
+                    if "answer" in items:
                         if (len(textP)>10):
-                            text=text+str(number)+"."+str(j+1)+" "+textP[:10]+"..."+"-> "+answer+"\n"
+                            text=text+str(number)+" "+textP[:10]+"..."+"-> "
                         else:
-                            text=text+str(number)+"."+str(j+1)+" "+textP[:10]+"-> "+answer+"\n"
+                            text=text+str(number)+" "+textP[:10]+"-> "
+                        if isinstance(items["answer"],str):
+                            answer=yxpToText(items["answer"])
+                            text=text+answer+"\n"
+                        else:
+                            answerL=""
+                            for j in items["answer"]:
+                                answerL=answerL+j[0]
+                                if not j==items["answer"][-1]:
+                                    answerL=answerL+"，"
+                            text=text+answerL+"\n"
+                    #---------------------------------------------
+                    else:
+                        for j in range(0,len(items["items"])):
+                            try:
+                                textP=yxpToText(items["items"][j]["prompt"])
+                            except:
+                                textP=""
+                            if isinstance(items["items"][j]["answer"],str):
+                                answer=yxpToText(items["items"][j]["answer"])
+                            else:
+                                answer=""
+                                for k in items["items"][j]["answer"]:
+                                    answer=answer+k[0]
+                                    if not k==items["items"][j]["answer"][-1]:
+                                        answer=answer+"，"
+                            if (len(textP)>10):
+                                text=text+str(number)+"."+str(j+1)+" "+textP[:10]+"..."+"-> "+answer+"\n"
+                            else:
+                                text=text+str(number)+"."+str(j+1)+" "+textP[:10]+"-> "+answer+"\n"
+
 #######################################################
     elif arg[1]=="yxpHw":
         time=yxpTimeGet()

@@ -163,7 +163,7 @@ elif len(arg)==4:
         classIndex=arg[3][2:]
         urlClassF="http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
             "user_id=%s&status=0&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=-1&pmatsemit=%s"%\
-            (arg[2],subjectList[arg[3]],yxpClassId(arg[2]),yxpTimeGet())
+            (arg[2],subjectList[classname],yxpClassId(arg[2]),yxpTimeGet())
         outF=json.loads(requests.get(urlClassF).text)["recordset"]["lists"][int(classIndex)-1]["course_hour_publish_id"]
         urlClassid="http://api2.anoah.com/jwt/homework/stat/basicForStudent?"\
             "user_id=%s&publish_id=%s&pmatsemit=%s"%(arg[2],outF,yxpTimeGet())

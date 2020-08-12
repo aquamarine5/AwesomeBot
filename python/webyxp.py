@@ -2,7 +2,6 @@ import requests
 import sys
 import json
 
-textWrite=True
 is_pydroid=False
 if(is_pydroid):
     arg="python yxpRs 1585738 最新".split(" ")
@@ -361,10 +360,9 @@ else:
     text="参数不够"
 ####################################################### 
 with open(r"D:\Program Source\QQBOT\python\Temp\temp.txt","w+",encoding="UTF-8") as f:
-    if(textWrite):
-    	if(is_pydroid):print(text)
-    	else:
-             text=str(text)
-             f.write(text)
-             print(text)
+    if(is_pydroid):print(text)
+    else:
+            text=str(text)
+            f.write(text)
+            print(text)
 

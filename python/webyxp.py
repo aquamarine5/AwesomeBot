@@ -14,10 +14,10 @@ def yxpTimeGet():
     out=json.loads(out.text)
     return out["recordset"]["system_time"]
 def yxpName(uid):
-    urlN="https://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(uid,str(yxpTimeGet()))
+    urlN="http://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(uid,str(yxpTimeGet()))
     return json.loads(requests.get(urlN).text)["recordset"]["real_name"]
 def yxpClassId(uid):
-    urlClass="https://e.anoah.com/api/?q=json/ebag5/User/getUserClasses&info={\"userid\":%s}&pmatsemit=%s"%(uid,yxpTimeGet())
+    urlClass="http://e.anoah.com/api/?q=json/ebag5/User/getUserClasses&info={\"userid\":%s}&pmatsemit=%s"%(uid,yxpTimeGet())
     Class=json.loads(requests.get(urlClass).text)
     ClassScore=""
     for t in range(0,len(Class["recordset"])):
@@ -64,7 +64,7 @@ if len(arg)==3:
 描述：%s"""%(str(out["id"]),str(out["create_time"]),str(out["dcom_name"]),str(out["dcom_title"]),str(out["activity_name"]),str(out["description"]))
 ####################################################### 
     elif arg[1]=="yxpNm":
-        urlNm="https://e.anoah.com/api/?q=json/ebag/user/score/userClassRank&info={\"class_id\":\"%s\"}"
+        urlNm="https://e.anoah.com/api/?q=json/ebag/user/score/userClassRank&info={\"class_id\":\"%s\"}"%(yxpName(arg[2]))
     elif arg[1]=="yxpPic":
         url="https://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(arg[2],str(yxpTimeGet()))
         out=requests.get(url)
@@ -116,11 +116,6 @@ if len(arg)==3:
 elif len(arg)==2:
     if arg[1]=="yxpTIME": 
         text=yxpTimeGet()
-    elif arg=="yxpJWT":
-        urln="https://emessage.anoah.com/api/?q=json/jwt/Emessage/get_list_latest&info="\
-            "{\"message_types\":\"0,1,2\",\"user_id\":1585732}&pmatsemit="+str(yxpTimeGet())
-        outn=requests.get(urln)
-        text=outn.text
     else:
         text="Error"
 #######################################################
@@ -154,9 +149,33 @@ elif len(arg)==4:
                         str(classr)+"分（"+str(out["recordset"][0]["class_right_rate"])+"）  "+string+"\n"
         #---------------------------------------------
         else:
+            subjectNamelist=["语文","数学","英语","化学（测试性功能）",'历史','地理','生物','物理','道法','美术','信息','音乐','体育']
             url="http://e.anoah.com/api/?q=json/ebag5/Statistics/getStudentScoreInfo&info="\
-                    "{\"user_id\":%s,\"class_id\":\"%s\",\"type\":0,\"subject_id\":%s,\"pagesize\"10,\"page\":1,\"start_date\":\"\",\"end_date\":\"\"}&pmatsemit=%s"%\
-                    (arg[2],yxpClassId(arg[2]),subjectList[arg[3]],yxpTimeGet())
+                    "{\"user_id\":%s,\"class_id\":\"%s\",\"type\":0,\"subject_id\":%s,\"pagesize\":-1,\"page\":1,\"start_date\":\"\",\"end_date\":\"\"}&pmatsemit=%s"%\
+                    (arg[2],Classid,subjectList[arg[3]],yxpTimeGet())
+            out=json.loads(requests.get(url).text)
+            if(subjectList[arg[3]] in range(1,4)):
+                scoreMain=120
+            else:
+                scoreMain=100
+            text="这是 "+yxpName(arg[2])+"的%s最近分数（仅显示已批改）：\n"%(arg[3])
+            for i in range(0,len(out["recordset"])):
+                if(out["recordset"]==""):
+                    text=text+"☛ "+subjectNamelist[i]+"：无 已批改 成绩\n"
+                else:
+                    if(i in range(0,3)):
+                        result=round(out["recordset"][i]["student_right_rate"]*scoreMain,2)
+                        classr=round(out["recordset"][i]["class_right_rate"]*scoreMain,2)
+                    else:
+                        result=round(out["recordset"][i]["student_right_rate"]*scoreMain,2)
+                        classr=round(out["recordset"][i]["class_right_rate"]*scoreMain,2)
+                    if(result>=classr):
+                        string="■"
+                    else:
+                        string="□"
+                    text=text+str(i)+"  "+out["recordset"][i]["publish_time"]+" "+out["recordset"][i]["title"]+"\n个人："+\
+                        str(result)+"分（"+str(out["recordset"][i]["student_right_rate"])+"）\n全班平均分："+\
+                        str(classr)+"分（"+str(out["recordset"][i]["class_right_rate"])+"）  "+string+"\n"
 #######################################################
     elif arg[1]=="yxpLt":
         urlClassF="http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
@@ -216,7 +235,7 @@ elif len(arg)==4:
                     textP=yxpToText(items["prompt"])
                     if "answer" in items:
                         if (len(textP)>10):
-                            text=text+str(number)+" "+textP[:10]+"..."+"-> "
+                            text=text+str(number)+" "+textP[:10]+" ..."+"-> "
                         else:
                             text=text+str(number)+" "+textP[:10]+"-> "
                         if isinstance(items["answer"],str):

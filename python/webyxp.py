@@ -26,6 +26,24 @@ def yxpClassId(uid):
         else:
             ClassScore=str(ClassScore)+","+str(Class["recordset"][t]["class_id"])
     return ClassScore
+def yxpToText(inp):
+    inp=inp.replace("<p>","")
+    inp=inp.replace(r"</p>","")
+    inp=inp.replace("<span class=\"spot\">","")
+    inp=inp.replace("<span style=\"font-weight:bold\">","")
+    inp=inp.replace("<span style=\"color:blue\">","")
+    inp=inp.replace(r"</span>","")
+    inp=inp.replace("&nbsp;","")
+    inp=inp.replace("<pos>","")
+    inp=inp.replace(r"</pos>","")
+    inp=inp.replace(r"<br  />","")
+    inp=inp.replace(r"<br />","")
+    inp=inp.replace('<p align=\"center\">',"")
+    inp=inp.replace("<img","`")
+    inp=inp.replace(">","~")
+    s=inp.find("`")
+    e=inp.find("~")
+    return inp[:s]+inp[e+1:]
 ####################################################### 
 subjectList={"语文":1,"数学":2,"英语":3,"化学":4,"历史":5,"地理":6,"生物":7,"物理":8,"美术":32,"信息":33,"音乐":14,"体育":23,"道法":437}
 ####################################################### 
@@ -176,72 +194,66 @@ elif len(arg)==4:
         outAnswer=json.loads(requests.get(urlAnswer).text)
         if outAnswer==[]:
             outAnswer=json.loads(requests.get(urlAnswerUt).text)
+        else:
+            outAnswer=outAnswer["section"][0]["items"]
         answer=""
+        Ut=False
+        number=0
         text="这是%s的作业答案：\n不建议滥用\n"%(outQid["title"])
-        outAnswer=outAnswer["section"][0]["items"]
         #---------------------------------------------
-        for i in range(0,len(outAnswer)):
-            items=outAnswer[i]
-            textP=items["prompt"]
-            textP=textP.replace("<p>","")
-            textP=textP.replace(r"</p>","")
-            textP=textP.replace("<span class=\"spot\">","")
-            textP=textP.replace(r"</span>","")
-            textP=textP.replace("&nbsp;","")
-            textP=textP.replace("<pos>","")
-            textP=textP.replace(r"</pos>","")
-            if "answer" in items:
-                if (len(textP)>10):
-                    text=text+str(i+1)+" "+textP[:10]+"..."+"-> "
-                else:
-                    text=text+str(i+1)+" "+textP[:10]+"-> "
-                if isinstance(items["answer"],str):
-                    answer=items["answer"]
-                    answer=answer.replace("<p>","")
-                    answer=answer.replace(r"</p>","")
-                    answer=answer.replace("<span class=\"spot\">","")
-                    answer=answer.replace(r"</span>","")
-                    answer=answer.replace("&nbsp;","")
-                    answer=answer.replace("<pos>","")
-                    answer=answer.replace(r"</pos>","")
-                    text=text+answer+"\n"
-                else:
-                    answerL=""
-                    for j in items["answer"]:
-                        answerL=answerL+j[0]
-                        if not j==items["answer"][-1]:
-                            answerL=answerL+"，"
-                    text=text+answerL+"\n"
-            #---------------------------------------------
+        for csid in range(0,outQid["course_resource_count"]):
+            Qid=outQid["course_resource_list"][csid]["qti_id"]
+            urlAnswer="http://e.anoah.com/api_cache/?q=json/Qti/get&info="\
+                "{\"param\":{\"qid\":\"test:%s\",\"dataType\":1},\"pulishId\":\"%s\"}"%(Qid,outF)
+            urlAnswerUt="http://e.anoah.com/api_cache/?q=json/Qti/get&info="\
+                "{\"param\":{\"qid\":\"%s\",\"dataType\":1},\"pulishId\":\"%s\"}"%(Qid,outF)
+            outAnswer=json.loads(requests.get(urlAnswer).text)
+            if outAnswer==[]:
+                outAnswer=json.loads(requests.get(urlAnswerUt).text)
+                Ut=True
+                fori=1
             else:
-                for j in range(0,len(items["items"])):
-                    textP=items["items"][j]["prompt"]
-                    textP=textP.replace("<p>","")
-                    textP=textP.replace(r"</p>","")
-                    textP=textP.replace("<span class=\"spot\">","")
-                    textP=textP.replace(r"</span>","")
-                    textP=textP.replace("&nbsp;","")
-                    textP=textP.replace("<pos>","")
-                    textP=textP.replace(r"</pos>","")
-                    if isinstance(items["items"][j]["answer"],str):
-                        answer=items["items"][j]["answer"]
-                        answer=answer.replace("<p>","")
-                        answer=answer.replace(r"</p>","")
-                        answer=answer.replace("<span class=\"spot\">","")
-                        answer=answer.replace(r"</span>","")
-                        answer=answer.replace("&nbsp;","")
-                        answer=answer.replace("<pos>","")
-                        answer=answer.replace(r"</pos>","")
-                    else:
-                        answer=""
-                        for j in items["items"][j]["answer"]:
-                            answer=answer+j[0]
-                            if not j==items["items"][j]["answer"][-1]:
-                                answer=answer+"，"
+                outAnswer=outAnswer["section"][0]["items"]
+                Ut=False
+                fori=len(outAnswer)
+            for i in range(0,fori):
+                number=number+1
+                if not Ut:
+                    items=outAnswer[i]
+                else:
+                    items=outAnswer
+                textP=yxpToText(items["prompt"])
+                if "answer" in items:
                     if (len(textP)>10):
-                        text=text+str(i+1)+"."+str(j+1)+" "+textP[:10]+"..."+"-> "+answer+"\n"
+                        text=text+str(number)+" "+textP[:10]+"..."+"-> "
                     else:
-                        text=text+str(i+1)+"."+str(j+1)+" "+textP[:10]+"-> "+answer+"\n"
+                        text=text+str(number)+" "+textP[:10]+"-> "
+                    if isinstance(items["answer"],str):
+                        answer=yxpToText(items["answer"])
+                        text=text+answer+"\n"
+                    else:
+                        answerL=""
+                        for j in items["answer"]:
+                            answerL=answerL+j[0]
+                            if not j==items["answer"][-1]:
+                                answerL=answerL+"，"
+                        text=text+answerL+"\n"
+                #---------------------------------------------
+                else:
+                    for j in range(0,len(items["items"])):
+                        textP=yxpToText(items["items"][j]["prompt"])
+                        if isinstance(items["items"][j]["answer"],str):
+                            answer=yxpToText(items["items"][j]["answer"])
+                        else:
+                            answer=""
+                            for j in items["items"][j]["answer"]:
+                                answer=answer+j[0]
+                                if not j==items["items"][j]["answer"][-1]:
+                                    answer=answer+"，"
+                        if (len(textP)>10):
+                            text=text+str(number)+"."+str(j+1)+" "+textP[:10]+"..."+"-> "+answer+"\n"
+                        else:
+                            text=text+str(number)+"."+str(j+1)+" "+textP[:10]+"-> "+answer+"\n"
 #######################################################
     elif arg[1]=="yxpHw":
         time=yxpTimeGet()

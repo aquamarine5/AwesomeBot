@@ -42,9 +42,12 @@ def yxpToText(inp):
     inp=inp.replace(">","~")
     s=inp.find("`")
     e=inp.find("~")
-    return inp[:s]+inp[e+1:]
+    if s==-1:inp=inp[:s]+inp[e+1:]
+    return inp
 ####################################################### 
 subjectList={"语文":1,"数学":2,"英语":3,"化学":4,"历史":5,"地理":6,"生物":7,"物理":8,"美术":32,"信息":33,"音乐":14,"体育":23,"道法":437}
+subjectlistNum=[1,2,3,4,5,6,7,8,437,32,33,14,23]
+subjectNamelist=["语文","数学","英语","化学（测试性功能）",'历史','地理','生物','物理','道法','美术','信息','音乐','体育']
 ####################################################### 
 if len(arg)==3:
     if arg[1]=="yxpDCom":
@@ -62,8 +65,26 @@ if len(arg)==3:
 活动名称：%s    
 描述：%s"""%(str(out["id"]),str(out["create_time"]),str(out["dcom_name"]),str(out["dcom_title"]),str(out["activity_name"]),str(out["description"]))
 ####################################################### 
+    elif arg[1]=="yxpLt":
+        textHave=0
+        text="这是%s的所有作业评语：\n"%(yxpName(arg[2]))
+        for j in range(0,len(subjectlistNum)):
+            urlClassF="http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
+                "user_id=%s&status=1&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=-1&pmatsemit=%s"%\
+                (arg[2],subjectlistNum[j],yxpClassId(arg[2]),yxpTimeGet())
+            outF=json.loads(requests.get(urlClassF).text)["recordset"]
+            outFL=outF["lists"]
+            for i in range(0,outF["total_count"]):
+                if not outFL[i]["comment"]==None:
+                    textHave=textHave+1
+                    commentText=outFL[i]["comment"]["text"].replace("&nbsp;","")
+                    text=text+outFL[i]["title"]+" "+outFL[i]["teacher_name"]+"\n老师评语："+commentText+"\n"
+        if textHave==0:
+            text=text+"无老师作业评语。"
+#######################################################
     elif arg[1]=="yxpNm":
         urlNm="https://e.anoah.com/api/?q=json/ebag/user/score/userClassRank&info={\"class_id\":\"%s\"}"%(yxpName(arg[2]))
+#######################################################
     elif arg[1]=="yxpPic":
         url="https://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(arg[2],str(yxpTimeGet()))
         out=requests.get(url)
@@ -122,13 +143,11 @@ elif len(arg)==4:
     if arg[1]=="yxpRs":
         Classid=yxpClassId(arg[2])
         if(arg[3]=="最新"):
-            subjectlist=[1,2,3,4,5,6,7,8,437,32,33,14,23]
-            subjectNamelist=["语文","数学","英语","化学（测试性功能）",'历史','地理','生物','物理','道法','美术','信息','音乐','体育']
             text="这是 "+yxpName(arg[2])+"的全科最近分数（仅显示已批改）：\n"
             for i in range(0,13):
                 url="http://e.anoah.com/api/?q=json/ebag5/Statistics/getStudentScoreInfo&info="\
                     "{\"user_id\":%s,\"class_id\":\"%s\",\"type\":0,\"subject_id\":%s,\"pagesize\":1,\"page\":1,\"start_date\":\"\",\"end_date\":\"\"}&pmatsemit=%s"%\
-                        (arg[2],Classid,subjectlist[i],yxpTimeGet())
+                        (arg[2],Classid,subjectlistNum[i],yxpTimeGet())
                 out=json.loads(requests.get(url).text)
                 if(out["recordset"]==""):
                     text=text+"☛ "+subjectNamelist[i]+"：无 已批改 成绩\n"
@@ -176,23 +195,7 @@ elif len(arg)==4:
                         str(result)+"分（"+str(out["recordset"][i]["student_right_rate"])+"）\n全班平均分："+\
                         str(classr)+"分（"+str(out["recordset"][i]["class_right_rate"])+"）  "+string+"\n"
 #######################################################
-    elif arg[1]=="yxpLt":
-        urlClassF="http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
-            "user_id=%s&status=1&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=-1&pmatsemit=%s"%\
-            (arg[2],subjectList[arg[3]],yxpClassId(arg[2]),yxpTimeGet())
-        outF=json.loads(requests.get(urlClassF).text)["recordset"]
-        outFL=outF["lists"]
-        textHave=0
-        text="这是%s的%s所有作业评语：\n"%(yxpName(arg[2]),arg[3])
-        for i in range(0,outF["total_count"]):
-            if outFL[i]["comment"]==None:
-                pass
-            else:
-                textHave=textHave+1
-                commentText=outFL[i]["comment"]["text"].replace("&nbsp;","")
-                text=text+outFL[i]["title"]+" "+outFL[i]["teacher_name"]+"\n老师评语："+commentText+"\n"
-        if textHave==0:
-            text=text+"无老师作业评语。"
+    
 #######################################################
     elif arg[1]=="yxpAs":
         classname=arg[3][:2]

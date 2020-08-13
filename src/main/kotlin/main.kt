@@ -20,6 +20,7 @@ suspend fun main() {
     }.alsoLogin()
 
     val program="\"d:/Program Source/QQBOT/python/webyxp.py\""
+    val func="\"d:/Program Source/QQBOT/python/func.py\""
     val image="\"d:/Program Source/QQBOT/python/image.py\""
     val temp="D:/Program Source/QQBOT/python/Temp/temp.txt"
     val imageTemp="D:/Program Source/QQBOT/python/Temp/temp.jpg"
@@ -31,7 +32,7 @@ suspend fun main() {
         val ct=message.split(" ")
         when(ct[0]){
             "yxpLt","yxp老师评语"->{
-                val command="python $program yxpLt ${ct[1]} ${ct[2]}"
+                val command="python $program yxpLt ${ct[1]}"
                 val out=command.execute()
                 out.waitFor()
                 reply(File(temp).readText())
@@ -73,7 +74,7 @@ suspend fun main() {
             "yxpHW","yxp作业","yxpHw","yxp作业完成"->{
                 if(ct.size==3){
                     when (ct[2]){
-                        "语文","数学","英语","历史","道法","生物","地理","信息","物理","体育","美术","音乐"->{
+                        "语文","数学","英语","历史","道法","生物","地理","信息","物理","体育","美术","音乐","没写"->{
                             val command="python $program yxpHw ${ct[1]} ${ct[2]}"
                             val out=command.execute()
                             out.waitFor()
@@ -112,6 +113,19 @@ suspend fun main() {
                 out.waitFor()
                 val file=File(temp)
                 reply(file.readText())}
+            "qrcode","二维码生成"->{
+                val qrtext=ct[1].replace(" ","")
+                val command="myqr ${qrtext} -d \"D:/Program Source/QQBOT/python/Temp\""
+                val out = command.execute()
+                out.waitFor()
+                File("D:/Program Source/QQBOT/python/Temp/qrcode.png").sendAsImage()
+            }
+            "性别判断","ng","Sex"->{
+                val command="python $func ng ${ct[1]}"
+                val out=command.execute()
+                out.waitFor()
+                reply(File(temp).readText())
+            }
             "resend"->{
                 when (ct[1]){
                     "text"->{

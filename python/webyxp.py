@@ -9,21 +9,19 @@ else:
     arg=sys.argv
 def yxpTimeGet():
     urlT="http://e.anoah.com/api_dist/?q=json/ebag/System/getServerTime&info={}"
-    out=requests.get(urlT)
-    out=json.loads(out.text)
-    return out["recordset"]["system_time"]
+    return json.loads(requests.get(urlT).text)["recordset"]["system_time"]
 def yxpName(uid):
     urlN="http://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(uid,str(yxpTimeGet()))
     return json.loads(requests.get(urlN).text)["recordset"]["real_name"]
 def yxpClassId(uid):
     urlClass="http://e.anoah.com/api/?q=json/ebag5/User/getUserClasses&info={\"userid\":%s}&pmatsemit=%s"%(uid,yxpTimeGet())
-    Class=json.loads(requests.get(urlClass).text)
+    Class=json.loads(requests.get(urlClass).text)["recordset"]
     ClassScore=""
-    for t in range(0,len(Class["recordset"])):
+    for t in range(0,len(Class)):
         if t==0:
-            ClassScore=Class["recordset"][t]["class_id"]
+            ClassScore=Class[t]["class_id"]
         else:
-            ClassScore=str(ClassScore)+","+str(Class["recordset"][t]["class_id"])
+            ClassScore=str(ClassScore)+","+str(Class[t]["class_id"])
     return ClassScore
 def yxpToText(inp):
     inp=inp.replace("<p>","")
@@ -51,10 +49,8 @@ subjectNamelist=["语文","数学","英语","化学（测试性功能）",'历�
 ####################################################### 
 if len(arg)==3:
     if arg[1]=="yxpDCom":
-        url="http://e.anoah.com/api_cache/?q=json/icom/Dcom/getDCom&info={\"dcom_id\":%s}"%int(arg[2])
-        print(url)
-        out=requests.get(url)
-        out=json.loads(out.text)
+        url="http://e.anoah.com/api_cache/?q=json/icom/Dcom/getDCom&info={\"dcom_id\":%s}"%arg[2]
+        out=json.loads(requests.get(url).text)
         if "status" in out:
             text="指定的作业不存在"
         else:
@@ -63,7 +59,7 @@ if len(arg)==3:
 作业名称：%s    
 作业标题：%s    
 活动名称：%s    
-描述：%s"""%(str(out["id"]),str(out["create_time"]),str(out["dcom_name"]),str(out["dcom_title"]),str(out["activity_name"]),str(out["description"]))
+描述：%s"""%(out["id"],out["create_time"],out["dcom_name"],out["dcom_title"],out["activity_name"],out["description"])
 ####################################################### 
     elif arg[1]=="yxpLt":
         textHave=0
@@ -83,15 +79,15 @@ if len(arg)==3:
             text=text+"无老师作业评语。"
 #######################################################
     elif arg[1]=="yxpNm":
-        urlNm="https://e.anoah.com/api/?q=json/ebag/user/score/userClassRank&info={\"class_id\":\"%s\"}"%(yxpName(arg[2]))
+        cid=yxpClassId(arg[2])
+        for i in range(0,len(cid))
+            urlNm="https://e.anoah.com/api/?q=json/ebag/user/score/userClassRank&info={\"class_id\":\"%s\"}"%(cid[i])
+
 #######################################################
     elif arg[1]=="yxpPic":
-        url="https://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(arg[2],str(yxpTimeGet()))
-        out=requests.get(url)
-        out=json.loads(out.text)
+        url="https://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(arg[2],yxpTimeGet())
+        urlJson=json.loads(requests.get(url).text)["recordset"]["avatar"].replace(r"\/","/")
         urlPic="http://static.anoah.com"
-        urlJson=out["recordset"]["avatar"]
-        urlJson=urlJson.replace(r"\/","/")
         if(urlJson.startswith("http")):
             urlPic=urlJson
             urlPic2="http://www.anoah.com/ebag/static/images/noavatar.jpg"
@@ -195,8 +191,6 @@ elif len(arg)==4:
                         str(result)+"分（"+str(out["recordset"][i]["student_right_rate"])+"）\n全班平均分："+\
                         str(classr)+"分（"+str(out["recordset"][i]["class_right_rate"])+"）  "+string+"\n"
 #######################################################
-    
-#######################################################
     elif arg[1]=="yxpAs":
         classname=arg[3][:2]
         classIndex=arg[3][2:]
@@ -278,8 +272,7 @@ elif len(arg)==4:
             urlN="http://api2.anoah.com/jwt/homework/publish/getUndoNumForStudent?"\
                     "user_id=%s&class_id=%s&from_date=&to_date=&pmatsemit=%s"%\
                     (arg[2],yxpClassId(arg[2]),yxpTimeGet())
-            outN=json.loads(requests.get(urlN).text)
-            outN=outN["recordset"]
+            outN=json.loads(requests.get(urlN).text)["recordset"]
             text="这是 %s 的没写作业：\n"%(yxpName(arg[2]))
             n=0
             for i in range(0,len(outN)):
@@ -339,7 +332,7 @@ elif len(arg)==4:
                         if not i==int(okjs["total_count"]):
                             text=text+"\n"
                     if (int(okjs["per_page"])<int(okjs["total_count"])):
-                        text=text+"※ 仅显示%s个，但一共有%s个作业完成\n"%(int(okjs["per_page"]),int(okjs["total_count"]))
+                        text=text+"※ 仅显示%s个，但一共有%s个作业完成\n"%(okjs["per_page"],okjs["total_count"])
                 if(nokjs["total_count"]==0):
                     if(write==0):
                         text="老师没留过作业。"
@@ -357,7 +350,7 @@ elif len(arg)==4:
                         if not i==int(okjs["total_count"]):
                             text=text+"\n"
                     if (int(nokjs["per_page"])<int(nokjs["total_count"])):
-                        text=text+"※ 仅显示%s个，但一共有%s个作业未完成"%(int(nokjs["per_page"]),int(nokjs["total_count"]))
+                        text=text+"※ 仅显示%s个，但一共有%s个作业未完成"%(nokjs["per_page"],nokjs["total_count"])
 #######################################################
 else:
     text="参数不够"

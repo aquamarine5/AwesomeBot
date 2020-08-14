@@ -17,7 +17,7 @@ def yxpClassId(uid):
     urlClass="http://e.anoah.com/api/?q=json/ebag5/User/getUserClasses&info={\"userid\":%s}&pmatsemit=%s"%(uid,yxpTimeGet())
     Class=json.loads(requests.get(urlClass).text)["recordset"]
     ClassScore=""
-    for t in range(0,len(Class)):
+    for t in range(len(Class)):
         if t==0:
             ClassScore=Class[t]["class_id"]
         else:
@@ -64,13 +64,13 @@ if len(arg)==3:
     elif arg[1]=="yxpLt":
         textHave=0
         text="这是%s的所有作业评语：\n"%(yxpName(arg[2]))
-        for j in range(0,len(subjectlistNum)):
+        for j in range(len(subjectlistNum)):
             urlClassF="http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
                 "user_id=%s&status=1&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=-1&pmatsemit=%s"%\
                 (arg[2],subjectlistNum[j],yxpClassId(arg[2]),yxpTimeGet())
             outF=json.loads(requests.get(urlClassF).text)["recordset"]
             outFL=outF["lists"]
-            for i in range(0,outF["total_count"]):
+            for i in range(outF["total_count"]):
                 if not outFL[i]["comment"]==None:
                     textHave=textHave+1
                     commentText=outFL[i]["comment"]["text"].replace("&nbsp;","")
@@ -78,11 +78,51 @@ if len(arg)==3:
         if textHave==0:
             text=text+"无老师作业评语。"
 #######################################################
+    elif arg[1]=="yxpCt":
+        url="http://api2.anoah.com/jwt/user/classes/getWithUser?user_id=%s&pmatsemit=%s"%(arg[2],yxpTimeGet())
+        urlCt="http://e.anoah.com/api/?q=json/ebag5/Schedule/readSchedule&info="\
+            "{\"user_id\":\"%s\",\"class_id\":\"%s\"}&pmatsemit=%s"
+        cln=json.loads(requests.get(url).text)["recordset"]
+        text="这是%s的课程表：\n"%yxpName(arg[2])
+        for i in range(len(cln)):
+            text=text+"这是%s的课程表：\n"%cln[i]["class_name"]
+            ct=json.loads(requests.get(urlCt%(arg[2],cln[i]["class_id"],yxpTimeGet())).text)["recordset"]["schedule_data"]
+            if ct["am"][0][0]=="":
+                text=text+"没有课程表。\n"
+            else:
+                text=text+"周一 周二 周三 周四 周五\n"
+                for am in range(len(ct["am"])):
+                    for j in range(len(ct["am"][am])):
+                        sch=ct["am"][am][j]
+                        sch=sch.replace("信息技术","信息")
+                        sch=sch.replace("道德与法治","道法")
+                        text=text+sch+" "
+                        if j==len(ct["am"][am])-1:
+                            text=text+"\n"
+                for pm in range(len(ct["pm"])):
+                    for j in range(len(ct["am"][am])):
+                        sch=ct["pm"][pm][j]
+                        sch=sch.replace("信息技术","信息")
+                        sch=sch.replace("道德与法治","道法")
+                        text=text+sch+" "
+                        if j==len(ct["pm"][pm])-1:
+                            text=text+"\n"
+#######################################################
     elif arg[1]=="yxpNm":
-        cid=yxpClassId(arg[2])
-        for i in range(0,len(cid))
-            urlNm="https://e.anoah.com/api/?q=json/ebag/user/score/userClassRank&info={\"class_id\":\"%s\"}"%(cid[i])
-
+        cid=yxpClassId(arg[2]).split(",")
+        url="http://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s,\"class_id\":%s}&pmatsemit=%s"
+        text=""
+        for i in range(len(cid)):
+            urlNm="http://e.anoah.com/api/?q=json/ebag/user/score/userClassRank&info={\"class_id\":\"%s\"}"%(cid[i])
+            outc=json.loads(requests.get(urlNm).text)["recordset"]
+            outs=json.loads(requests.get(url%(arg[2],cid[i],yxpTimeGet())).text)["recordset"]
+            text=text+yxpName(arg[2])+"的积分情况："+str(outs["points_count"])+"\n班级排行：%s 学校排行：%s"%(outs["class_rank"],outs["school_rank"])
+            text+="\n班级排行："
+            for j in range(5):
+                text=text+str(j)+" "+outc[j]["real_name"]+" "+str(outc[j]["points_count"])+"\n"
+            text+="......\n"
+            for j in range(5):
+                text=text+str(len(outc)-1-j)+" "+outc[len(outc)-1-j]["real_name"]+" "+str(outc[len(outc)-1-j]["points_count"])+"\n"
 #######################################################
     elif arg[1]=="yxpPic":
         url="https://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(arg[2],yxpTimeGet())
@@ -113,15 +153,9 @@ if len(arg)==3:
             "={\"userid\":%s,\"pagesize\":10,\"page\":1,\"start\":\"\",\"end\":\"\"}&pmatsemit=%s"%(arg[2],time)
         HaoTi=json.loads(requests.get(urlHaoTiBen).text)
         Class=json.loads(requests.get(urlClass).text)
-        ClassScore=""
-        for t in range(0,len(Class["recordset"])):
-            if t==0:
-                ClassScore=Class["recordset"][t]["class_id"]
-            else:
-                ClassScore=str(ClassScore)+","+str(Class["recordset"][t]["class_id"])
-        urlClassIn="https://api2.anoah.com/jwt/user/classes/subjects?class_id=%s&pmatsemit=%s"%(ClassScore,time)
+        urlClassIn="https://api2.anoah.com/jwt/user/classes/subjects?class_id=%s&pmatsemit=%s"%(yxpClassId(arg[2]),time)
         urlHomework="https://e.anoah.com/api/?q=json/ebag5/Homework/readHomeworkStat&info="\
-            "{\"to\":\"\",\"class_ids\":\"%s\",\"user_id\":%s,\"from\":\"\"}&pmatsemit=%s"%(ClassScore,arg[2],time)
+            "{\"to\":\"\",\"class_ids\":\"%s\",\"user_id\":%s,\"from\":\"\"}&pmatsemit=%s"%(yxpClassId(arg[2]),arg[2],time)
         Score=json.loads(requests.get(urlScore).text)
         Score2=json.loads(requests.get(urlScore2).text)
         Score3=json.loads(requests.get(urlScore3).text)
@@ -140,7 +174,7 @@ elif len(arg)==4:
         Classid=yxpClassId(arg[2])
         if(arg[3]=="最新"):
             text="这是 "+yxpName(arg[2])+"的全科最近分数（仅显示已批改）：\n"
-            for i in range(0,13):
+            for i in range(13):
                 url="http://e.anoah.com/api/?q=json/ebag5/Statistics/getStudentScoreInfo&info="\
                     "{\"user_id\":%s,\"class_id\":\"%s\",\"type\":0,\"subject_id\":%s,\"pagesize\":1,\"page\":1,\"start_date\":\"\",\"end_date\":\"\"}&pmatsemit=%s"%\
                         (arg[2],Classid,subjectlistNum[i],yxpTimeGet())
@@ -148,7 +182,7 @@ elif len(arg)==4:
                 if(out["recordset"]==""):
                     text=text+"☛ "+subjectNamelist[i]+"：无 已批改 成绩\n"
                 else:
-                    if(i in range(0,3)):
+                    if(i in range(3)):
                         result=round(out["recordset"][0]["student_right_rate"]*120,2)
                         classr=round(out["recordset"][0]["class_right_rate"]*120,2)
                     else:
@@ -173,11 +207,11 @@ elif len(arg)==4:
             else:
                 scoreMain=100
             text="这是 "+yxpName(arg[2])+"的%s最近分数（仅显示已批改）：\n"%(arg[3])
-            for i in range(0,len(out["recordset"])):
+            for i in range(len(out["recordset"])):
                 if(out["recordset"]==""):
                     text=text+"☛ "+subjectNamelist[i]+"：无 已批改 成绩\n"
                 else:
-                    if(i in range(0,3)):
+                    if(i in range(3)):
                         result=round(out["recordset"][i]["student_right_rate"]*scoreMain,2)
                         classr=round(out["recordset"][i]["class_right_rate"]*scoreMain,2)
                     else:
@@ -206,7 +240,7 @@ elif len(arg)==4:
         number=0
         text="这是%s的作业答案：\n不建议滥用\n"%(outQid["title"])
         #---------------------------------------------
-        for csid in range(0,outQid["course_resource_count"]):
+        for csid in range(outQid["course_resource_count"]):
             if(outQid["course_resource_list"][csid]["icom_name"]=="互动试题"):
                 Qid=outQid["course_resource_list"][csid]["qti_id"]
                 urlAnswer="http://e.anoah.com/api_cache/?q=json/Qti/get&info="\
@@ -222,7 +256,7 @@ elif len(arg)==4:
                     outAnswer=outAnswer["section"][0]["items"]
                     Ut=False
                     fori=len(outAnswer)
-                for i in range(0,fori):
+                for i in range(fori):
                     number=number+1
                     if not Ut:
                         items=outAnswer[i]
@@ -246,7 +280,7 @@ elif len(arg)==4:
                             text=text+answerL+"\n"
                     #---------------------------------------------
                     else:
-                        for j in range(0,len(items["items"])):
+                        for j in range(len(items["items"])):
                             try:
                                 textP=yxpToText(items["items"][j]["prompt"])
                             except:
@@ -275,7 +309,7 @@ elif len(arg)==4:
             outN=json.loads(requests.get(urlN).text)["recordset"]
             text="这是 %s 的没写作业：\n"%(yxpName(arg[2]))
             n=0
-            for i in range(0,len(outN)):
+            for i in range(len(outN)):
                 urlNok="http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
                     "user_id=%s&status=0&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=-1&pmatsemit=%s"%\
                     (arg[2],outN[i]["edu_subject_id"],yxpClassId(arg[2]),time)
@@ -325,7 +359,7 @@ elif len(arg)==4:
                         rg=okjs["per_page"]
                     else:
                         rg=okjs["total_count"]
-                    for i in range(0,int(rg)):
+                    for i in range(int(rg)):
                         if i==0:
                             text=text+"☛ 写了的作业（%s个）：\n"%(okjs["total_count"])
                         text=text+lists[i]["start_time"]+" "+lists[i]["title"]+" "+lists[i]["subject_name"]+lists[i]["teacher_name"]#+"\n作业ID："+lists[i]["course_hour_publish_id"]
@@ -343,7 +377,7 @@ elif len(arg)==4:
                         rg=nokjs["per_page"]
                     else:
                         rg=nokjs["total_count"]
-                    for i in range(0,int(rg)):
+                    for i in range(int(rg)):
                         if i==0:
                             text=text+"☛ 没写的作业（%s个）：\n"%(nokjs["total_count"])
                         text=text+noklists[i]["start_time"]+" "+noklists[i]["title"]+" "+noklists[i]["subject_name"]+noklists[i]["teacher_name"]#+"\n作业ID："+noklists[i]["course_hour_publish_id"]

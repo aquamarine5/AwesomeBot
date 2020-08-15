@@ -22,7 +22,9 @@
 - python webyxp.py yxpHw 1585745 语文  
 语文没写的作业
 - python webyxp.py yxpNm 1585745  
-暂未实现
+看积分排行榜
+- python webyxp.py yxpCt 1585745  
+看课程表  
 
 ## 脚本需要在cmd下运行，或者把 is_pydroid设置 true然后在arg下写命令。
 
@@ -32,6 +34,5 @@
 - 根据id看允许下载的应用  
 - 看所有作业的分数而不局限于已批改  
 - 作业互评  
-- 积分排行榜  
-- 课程表  
+- 看课本  
 - id所在学校和班级名称

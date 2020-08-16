@@ -24,15 +24,27 @@ suspend fun main() {
     val image="\"d:/Program Source/QQBOT/python/image.py\""
     val temp="D:/Program Source/QQBOT/python/Temp/temp.txt"
     val imageTemp="D:/Program Source/QQBOT/python/Temp/temp.jpg"
-    val imagePublic="D:/Program Source/QQBOT/python/Temp/FacePublic.jpg"
     val imagePrivate="D:/Program Source/QQBOT/python/Temp/FacePrivate.jpg"
 
     miraiBot.subscribeAlways<GroupMessageEvent> { event ->
         val message=event.message.content
+        val n =event.message[Image]
         val ct=message.split(" ")
         when(ct[0]){
             "yxpLt","yxp老师评语"->{
                 val command="python $program yxpLt ${ct[1]}"
+                val out=command.execute()
+                out.waitFor()
+                reply(File(temp).readText())
+            }
+            "yxpInfo","yxp信息"->{
+                val command="python $program yxpInfo ${ct[1]}"
+                val out=command.execute()
+                out.waitFor()
+                reply(File(temp).readText())
+            }
+            "yxpNm","yxp积分"->{
+                val command="python $program yxpNm ${ct[1]}"
                 val out=command.execute()
                 out.waitFor()
                 reply(File(temp).readText())
@@ -59,16 +71,10 @@ suspend fun main() {
                     println("ct[0]")
                 }
                 else{
-                    val str="这是 优学派用户 e${ct[1].toInt()}（${file.readText()}） 的头像"
-                    reply(str)
-
-                    File(imagePublic).sendAsImageTo(subject)
-                    try{
-                        File(imagePrivate).sendAsImageTo(subject)}
-                    catch(e:Exception){
-                        reply("没有设置个人头像，没品位")
-                    }
-                    println(ct[0])
+                    buildMessageChain {
+                        add("这是 优学派用户 e${ct[1].toInt()}（${file.readText()}） 的头像\n")
+                        add(uploadImage(File(imagePrivate)))
+                    }.send()
                 }
             }
             "yxpHW","yxp作业","yxpHw","yxp作业完成"->{

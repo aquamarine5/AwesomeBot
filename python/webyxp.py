@@ -44,6 +44,7 @@ def yxpToText(inp):
     return inp
 ####################################################### 
 subjectList={"语文":1,"数学":2,"英语":3,"化学":4,"历史":5,"地理":6,"生物":7,"物理":8,"美术":32,"信息":33,"音乐":14,"体育":23,"道法":437}
+subjectNmList={"1":"语文","2":"数学","3":"英语","4":"化学","5":"历史","6":"地理","7":"生物","8":"物理","32":"美术","33":"信息","14":"音乐","23":"体育","437":"道法"}
 subjectlistNum=[1,2,3,4,5,6,7,8,437,32,33,14,23]
 subjectNamelist=["语文","数学","英语","化学（测试性功能）",'历史','地理','生物','物理','道法','美术','信息','音乐','体育']
 ####################################################### 
@@ -100,7 +101,7 @@ if len(arg)==3:
                         if j==len(ct["am"][am])-1:
                             text=text+"\n"
                 for pm in range(len(ct["pm"])):
-                    for j in range(len(ct["am"][am])):
+                    for j in range(len(ct["pm"][pm])):
                         sch=ct["pm"][pm][j]
                         sch=sch.replace("信息技术","信息")
                         sch=sch.replace("道德与法治","道法")
@@ -109,7 +110,9 @@ if len(arg)==3:
                             text=text+"\n"
 #######################################################
     elif arg[1]=="yxpNm":
-        cid=yxpClassId(arg[2]).split(",")
+        cid=str(yxpClassId(arg[2])).split(",")
+        urlScore2="http://e.anoah.com/api/?q=json/ebag/user/score/score_count&info={\"userid\":%s}"%arg[2]
+        Score2=json.loads(requests.get(urlScore2).text)["recordset"]
         url="http://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s,\"class_id\":%s}&pmatsemit=%s"
         text=""
         for i in range(len(cid)):
@@ -117,26 +120,50 @@ if len(arg)==3:
             outc=json.loads(requests.get(urlNm).text)["recordset"]
             outs=json.loads(requests.get(url%(arg[2],cid[i],yxpTimeGet())).text)["recordset"]
             text=text+yxpName(arg[2])+"的积分情况："+str(outs["points_count"])+"\n班级排行：%s 学校排行：%s"%(outs["class_rank"],outs["school_rank"])
-            text+="\n班级排行："
+            text+="\n班级排行：\n"
             for j in range(5):
-                text=text+str(j)+" "+outc[j]["real_name"]+" "+str(outc[j]["points_count"])+"\n"
+                text=text+str(j+1)+" "+outc[j]["real_name"]+" "+str(outc[j]["points_count"])+"\n"
             text+="......\n"
-            for j in range(5):
+            for j in range(5,0,-1):
                 text=text+str(len(outc)-1-j)+" "+outc[len(outc)-1-j]["real_name"]+" "+str(outc[len(outc)-1-j]["points_count"])+"\n"
+        lg=hm100=hm80=csGOOD=csEXAM=ht=ct=aw=cp=-1
+        for si in Score2:
+            if si["category_id2_name"]=="登陆":
+                lg=si["points2"]
+            elif si["category_id2_name"]=="作业":
+                hm100=si["category3"][0]["points3"]
+                hm80=si["category3"][1]["points3"]
+            elif si["category_id2_name"]=="互动课堂":
+                csGOOD=si["category3"][0]["points3"]
+                csEXAM=si["category3"][1]["points3"]
+            elif si["category_id2_name"]=="好题本":
+                ht=si["points2"]
+            elif si["category_id2_name"]=="错题本":
+                ct=si["points2"]
+            elif si["category_id2_name"]=="我的问答":
+                aw=si["points2"]
+            elif si["category_id2_name"]=="班级空间":
+                cp=si["points2"]
+        c=outs["points_count"]
+        print("%s"%(round(aw/c,2)*100))
+        text+="=================\n登录分数：%s，%s %%\n作业分数：%s，%s %%\n- 完成作业获得分数：%s，%s %%\n"\
+            "- 作业正确率80%%获得分数：%s，%s %%\n互动课堂分数：%s，%s %%\n- 表扬分数：%s，%s %%\n"\
+            "- 按时提交练习分数：%s，%s %%\n好题收藏分数：%s，%s %%\n错题攻克分数：%s，%s %%\n班级问答总分数：%s，%s %%\n"\
+            "班级空间总分数：%s，%s %%" %\
+            (lg,round(lg/c,2)*100,
+            hm100+hm80,round((hm100+hm80)/c,2)*100,hm100,round(hm100/c,2)*100,hm80,round(hm80/c,2)*100,
+            csGOOD+csEXAM,round((csGOOD+csEXAM)/c,2)*100,csGOOD,round(csGOOD/c,2)*100,csEXAM,round(csEXAM/c,2)*100,
+            ht,round(ht/c,2)*100,ct,round(ct/c,2)*100,aw,round(aw/c,2)*100,cp,round(cp/c,2)*100)
 #######################################################
     elif arg[1]=="yxpPic":
         url="https://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(arg[2],yxpTimeGet())
         urlJson=json.loads(requests.get(url).text)["recordset"]["avatar"].replace(r"\/","/")
         urlPic="http://static.anoah.com"
         if(urlJson.startswith("http")):
-            urlPic=urlJson
             urlPic2="http://www.anoah.com/ebag/static/images/noavatar.jpg"
         else:
-            urlPic=urlPic+urlJson
-            urlPic2=urlPic.replace(".jpg","_private.jpg")
-        Pic=requests.get(urlPic)
-        with open(r"D:\Program Source\QQBOT\python\Temp\FacePublic.jpg","wb+") as f:
-            f.write(Pic.content)
+            urlPic2=(urlPic+urlJson).replace(".jpg","_private.jpg")
+        print(urlPic2)
         Pic2=requests.get(urlPic2)
         with open(r"D:\Program Source\QQBOT\python\Temp\FacePrivate.jpg","wb+") as f:
             f.write(Pic2.content)
@@ -144,24 +171,35 @@ if len(arg)==3:
 #######################################################
     elif arg[1]=="yxpInfo":
         time=yxpTimeGet()
-        urlHaoTiBen="https://e.anoah.com/api/?q=json/ebag5/Qtibook/readBookStatus&info="\
-            "{\"start_time\":\"2008-08-08+00:00:00\",\"user_id\":%s}&pmatsemit=%s"%(arg[2],time)
-        urlClass="https://e.anoah.com/api/?q=json/ebag5/User/getUserClasses&info={\"userid\":%s}&pmatsemit=%s"%(arg[2],time)
-        urlScore="https://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(arg[2],time)
-        urlScore2="https://e.anoah.com/api/?q=json/ebag/user/score/score_count&info={\"userid\":%s}"%arg[2]
-        urlScore3="https://e.anoah.com/api/?q=json/ebag/user/score/score_detail&info"\
-            "={\"userid\":%s,\"pagesize\":10,\"page\":1,\"start\":\"\",\"end\":\"\"}&pmatsemit=%s"%(arg[2],time)
-        HaoTi=json.loads(requests.get(urlHaoTiBen).text)
-        Class=json.loads(requests.get(urlClass).text)
-        urlClassIn="https://api2.anoah.com/jwt/user/classes/subjects?class_id=%s&pmatsemit=%s"%(yxpClassId(arg[2]),time)
-        urlHomework="https://e.anoah.com/api/?q=json/ebag5/Homework/readHomeworkStat&info="\
-            "{\"to\":\"\",\"class_ids\":\"%s\",\"user_id\":%s,\"from\":\"\"}&pmatsemit=%s"%(yxpClassId(arg[2]),arg[2],time)
-        Score=json.loads(requests.get(urlScore).text)
-        Score2=json.loads(requests.get(urlScore2).text)
-        Score3=json.loads(requests.get(urlScore3).text)
-        ClassIn=json.loads(requests.get(urlClassIn).text)
-        Homework=json.loads(requests.get(urlHomework).text)
+        urlClass="http://e.anoah.com/api/?q=json/ebag5/User/getUserClasses&info={\"userid\":%s}&pmatsemit=%s"%(arg[2],time)
+        urlScore="http://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s"%(arg[2],time)
+        urlHomework="http://api2.anoah.com/jwt/homework/publish/getUndoNumForStudent?"\
+            "user_id=%s&class_id=%s&from_date=&to_date=&pmatsemit=%s"%\
+            (arg[2],yxpClassId(arg[2]),time)
+        Class=json.loads(requests.get(urlClass).text)["recordset"]
+        urlClassIn="http://api2.anoah.com/jwt/user/classes/subjects?class_id=%s&pmatsemit=%s"%(yxpClassId(arg[2]),time)
+        Score=json.loads(requests.get(urlScore).text)["recordset"]
+        ClassIn=json.loads(requests.get(urlClassIn).text)["recordset"]
+        Homework=json.loads(requests.get(urlHomework).text)["recordset"]
+        urlLg="http://e.anoah.com/api/?q=json/ebag/user/score/score_detail&info="\
+            "{\"userid\":\"%s\",\"category_id2\":86,\"start\":\"\",\"end\":\"\",\"page\":1,\"pagesize\":1}"%arg[2]
+        Lg=json.loads(requests.get(urlLg).text)["recordset"]["data"][0]["added"]
         #---------------------------------------------
+        url="http://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s,\"class_id\":%s}&pmatsemit=%s"
+        text="这是%s的部分信息：\n积分数：%s\n"%(yxpName(arg[2]),Score["points_count"])
+        for i in range(len(Class)):
+            text=text+"- 他在： %s ，班主任是 %s \n"%(Class[i]["class_name"],Class[i]["head_teacher_name"])
+            urlNm="http://e.anoah.com/api/?q=json/ebag/user/score/userClassRank&info={\"class_id\":\"%s\"}"%(Class[i]["class_id"])
+            outc=json.loads(requests.get(urlNm).text)["recordset"]
+            outs=json.loads(requests.get(url%(arg[2],Class[i]["class_id"],yxpTimeGet())).text)["recordset"]
+            text=text+"== 在%s的积分情况："%Class[i]["class_name"]+"\n== 班级排行：%s 学校排行：%s"%(outs["class_rank"],outs["school_rank"])+"\n"
+        text=text+"- 最后一次有效登录："+Lg+"\n- 他学习的学科：\n== "
+        for j in range(len(ClassIn)):
+            text+=ClassIn[j]["subject_name"]
+            if not j+1 == len(ClassIn):text+="，"
+        text+="\n"
+        for k in range(len(Homework)):
+            text=text+"- "+subjectNmList[str(Homework[k]["edu_subject_id"])]+"没写的作业有：%s个\n"%Homework[k]["undo"]
 ####################################################### 
 elif len(arg)==2:
     if arg[1]=="yxpTIME": 

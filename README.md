@@ -16,13 +16,13 @@
 - python webyxp.py yxpPic 1585745  
 看这个id的私人头像
 - python webyxp.py yxpInfo 1585745  
-暂未实现
+看这个id的信息（信息大杂烩）
 - python webyxp.py yxpHw 1585745 没写  
 所有没写的作业
 - python webyxp.py yxpHw 1585745 语文  
 语文没写的作业
 - python webyxp.py yxpNm 1585745  
-看积分排行榜
+看积分排行榜和积分分布情况
 - python webyxp.py yxpCt 1585745  
 看课程表  
 
@@ -35,4 +35,4 @@
 - 看所有作业的分数而不局限于已批改  
 - 作业互评  
 - 看课本  
-- id所在学校和班级名称
+- id所在学校

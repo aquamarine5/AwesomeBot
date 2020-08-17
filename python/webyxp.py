@@ -235,7 +235,6 @@ elif len(arg)==4:
                         str(classr)+"分（"+str(out["recordset"][0]["class_right_rate"])+"）  "+string+"\n"
         #---------------------------------------------
         else:
-            subjectNamelist=["语文","数学","英语","化学（测试性功能）",'历史','地理','生物','物理','道法','美术','信息','音乐','体育']
             url="http://e.anoah.com/api/?q=json/ebag5/Statistics/getStudentScoreInfo&info="\
                     "{\"user_id\":%s,\"class_id\":\"%s\",\"type\":0,\"subject_id\":%s,\"pagesize\":-1,\"page\":1,\"start_date\":\"\",\"end_date\":\"\"}&pmatsemit=%s"%\
                     (arg[2],Classid,subjectList[arg[3]],yxpTimeGet())

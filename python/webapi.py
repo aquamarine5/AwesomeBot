@@ -3,8 +3,8 @@ import requests
 import json
 textWrite=True
 
-if sys.argv[1]=="ip":
-    if sys.argv=="ip":
+if len(sys.argv)==3:
+    if sys.argv[1]=="ip":
         url="https://whois.pconline.com.cn/ip.jsp?ip="+sys.argv[2]
         text=requests.get(url)
         text=text.text
@@ -27,6 +27,11 @@ if sys.argv[1]=="ip":
             out=outr["result"]["addressComponent"]
             print(out)
             text="位置： "+out["country"]+"  "+out["province"]+"  "+out["city"]+" "+out["district"]+"\n"+"地址： "+outr["result"]["formatted_address"]
+elif len(sys.argv)==2:
+    textWrite=False
+    url="http://e.anoah.com/api/?q=json/ebag/ValidateCode/getImageCode&info={\"uid\":\"114514\"}"
+    with open(r"D:\Program Source\QQBOT\python\Temp\Math.png","wb") as f:f.write(requests.get(url).content)
+    
 ####################################################### 
 with open(r"D:\Program Source\QQBOT\python\Temp\temp.txt","w+",encoding="UTF-8") as f:
     if(textWrite):

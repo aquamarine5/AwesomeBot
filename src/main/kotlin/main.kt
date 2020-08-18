@@ -57,7 +57,6 @@ suspend fun main() {
 
             "yxpAs","yxp答案"->{
                 val command="python $program yxpAs ${ct[1]} ${ct[2]}${ct[3]}"
-                println(command)
                 val out=command.execute()
                 out.waitFor()
                 reply(File(temp).readText()) }

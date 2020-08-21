@@ -2,10 +2,10 @@
 阿巴阿巴阿巴巴巴巴
 
 ebag yxp代码：webyxp.py  
-api 代码：webapi.py  
+爬虫 代码：webapi.py  
 qqbot机器人实现：main.kt  
 
-## 功能&使用介绍：  
+## （webyxp）功能&使用介绍：  
 
 - python webyxp.py yxpRs 1585745 最新  
 看这个id的最新已批改成绩和班级平均分比较  

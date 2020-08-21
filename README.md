@@ -1,11 +1,9 @@
 # ebagqbot
 阿巴阿巴阿巴巴巴巴
 
-## ebag yxp代码：webyxp.py
-
-## api 代码：webapi.py
-
-## qqbot机器人实现：main.kt
+ebag yxp代码：webyxp.py  
+api 代码：webapi.py  
+qqbot机器人实现：main.kt  
 
 ## 功能&使用介绍：  
 
@@ -57,6 +55,7 @@
 - [ ] 搜歌  
 - [ ] ffmpeg语音倒放（mirai 1.2.1 silk）  
 - [ ] tts转语音（voice sdk）  
+- [ ] b站视频解析（封面，mp4直链）
 
 ## （webapi）已经实现：
 
@@ -68,4 +67,4 @@
 
 ## （func.py）计划：
 
-- [ ] 整合进webapi.py
+- [ ] 整合进webapi.py（但因为内容未涉及到爬虫可能搁置）

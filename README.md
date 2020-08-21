@@ -55,7 +55,8 @@ qqbot机器人实现：main.kt
 - [ ] 搜歌  
 - [ ] ffmpeg语音倒放（mirai 1.2.1 silk）  
 - [ ] tts转语音（voice sdk）  
-- [ ] b站视频解析（封面，mp4直链）
+- [ ] b站视频解析（封面，mp4直链）  
+- [ ] 微博热点分析
 
 ## （webapi）已经实现：
 

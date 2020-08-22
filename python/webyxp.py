@@ -52,7 +52,7 @@ class webyxp():
         subjectNamelist=["语文","数学","英语","化学（测试性功能）",'历史','地理','生物','物理','道法','美术','信息','音乐','体育']
 ####################################################### 
         if len(arg)==3:
-            if arg[1]=="yxpDCom":
+            if  arg[1]=="yxpDCom":
                 url="http://e.anoah.com/api_cache/?q=json/icom/Dcom/getDCom&info={\"dcom_id\":%s}"%arg[2]
                 out=loads(requests.get(url).text)
                 if "status" in out:
@@ -60,6 +60,7 @@ class webyxp():
                 else:
                     text="优学派作业ID：%s\n创建时间：%s\n作业名称：%s\n作业标题：%s\n活动名称：%s\n描述：%s"%\
                         (out["id"],out["create_time"],out["dcom_name"],out["dcom_title"],out["activity_name"],out["description"])
+####################################################### 
             elif arg[1]=="yxpBk":
                 urlClass="http://e.anoah.com/api/?q=json/ebag5/User/getUserClasses&info="\
                     "{\"userid\":%s}&pmatsemit=%s"%(arg[2],yxpTimeGet())
@@ -242,7 +243,7 @@ class webyxp():
                 text="Error"
 #######################################################
         elif len(arg)==4:
-            if arg[1]=="yxpRs":
+            if  arg[1]=="yxpRs":
                 Classid=yxpClassId(arg[2])
                 if(arg[3]=="最新"):
                     text="这是 "+yxpName(arg[2])+"的全科最近分数（仅显示已批改）：\n"
@@ -455,8 +456,7 @@ class webyxp():
                                 if not i==int(okjs["total_count"]):
                                     text=text+"\n"
                             if (int(nokjs["per_page"])<int(nokjs["total_count"])):
-                                text=text+"※ 仅显示%s个，但一共有%s个作业未完成"%(nokjs["per_page"],nokjs["total_count"])
-            
+                                text=text+"※ 仅显示%s个，但一共有%s个作业未完成"%(nokjs["per_page"],nokjs["total_count"])        
 #######################################################
         else:
             text="参数不够"

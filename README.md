@@ -42,12 +42,12 @@
 
 ## （webyxp）暂时无法实现：  
 
-需要获取与uid所关联的设备id的api但没有找到：  
+#### 需要获取与uid所关联的设备id的api但没有找到：  
 - [ ] id所在学校  
 - [ ] 根据id看允许下载的应用  
-存在部分问题（jwt验证以及无返回问题）暂不可用：  
+#### 存在部分问题（jwt验证以及无返回问题）暂不可用：  
 - [ ] 看通知  
-可视化实现：  
+#### 可视化实现：  
 - [X] 见：QQbot（main.kt有说）  
 - [X] Pydroid、Powershell、cmd、Python支持  
 - [ ] python.tkinter（无 忘干净了）  

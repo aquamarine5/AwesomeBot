@@ -1,12 +1,13 @@
 # ebagqbot
 阿巴阿巴阿巴巴巴巴
 
-ebag yxp代码：webyxp.py  
-爬虫 代码：webapi.py  
-qqbot机器人实现：main.kt  
+> ebag yxp代码：webyxp.py  
+> 网络爬虫 代码：webapi.py  
+> qqbot机器人实现：main.kt  
 
 ## （webyxp）功能&使用介绍：  
 
+*(yxp内容无需登录验证，所以请慎用开玩笑）*  
 - python webyxp.py yxpRs 1585745 最新  
 看这个id的最新已批改成绩和班级平均分比较  
 - python webyxp.py yxpRs 1585745 生物  
@@ -15,7 +16,7 @@ qqbot机器人实现：main.kt
 看这个id的所有科目的老师作业评语
 - python webyxp.py yxpAs 1585745 语文4  
 看这个id下语文的第4个没写作业的答案  
-（请勿滥用）  
+**（请勿滥用）**  
 - python webyxp.py yxpPic 1585745  
 看这个id的私人头像（见\Temp）
 - python webyxp.py yxpInfo 1585745  
@@ -31,20 +32,28 @@ qqbot机器人实现：main.kt
 - python webyxp.py yxpBk 1585745  
 看所用书籍并保存第一张课本图片（见\Temp\Image）  
 
-## 脚本需要在cmd下运行，或者把 is_pydroid设置 true然后在arg下写命令。
+## 脚本需要在cmd下运行，或者把`is_pydroid`设置`true`然后在arg或argM下写命令。
 
 ## （webyxp）如果有时间就实现：
 
-- [ ] 看通知  
 - [ ] 每日一题（取好题/错题本信息）
 - [ ] 看所有作业的分数而不局限于已批改  
 - [ ] 作业互评  
 
 ## （webyxp）暂时无法实现：  
 
-需要获取与uid所关联的设备id的api但没有找到  
+需要获取与uid所关联的设备id的api但没有找到：  
 - [ ] id所在学校  
 - [ ] 根据id看允许下载的应用  
+存在部分问题（jwt验证以及无返回问题）暂不可用：  
+- [ ] 看通知  
+可视化实现：  
+- [X] 见：QQbot（main.kt有说）  
+- [X] Pydroid、Powershell、cmd、Python支持  
+- [ ] python.tkinter（无 忘干净了）  
+- [ ] Android 或者 C# WPF 程序（完全没有准备中）  
+> （还得重写代码懒）（Python转java/c#/kotlin）
+> 哦我在痴心妄想，我unity还没做（
 
 ## （webapi）正在实现：  
 
@@ -55,17 +64,18 @@ qqbot机器人实现：main.kt
 - [ ] ffmpeg语音倒放（mirai 1.2.1 silk）  
 - [ ] tts转语音（voice sdk）  
 - [ ] b站视频解析（封面，mp4直链）  
+- [ ] b站头像爬虫（随机头像）  
 - [ ] 微博热点分析
 
 ## （webapi）已经实现：
 
-- [X] 每日一图（锁屏杂志）
+- [X] 每日一图（锁屏杂志）（多主题已支持）
 - [X] 搜索建议（百度，必应，360，搜狗搜索）  
 - [X] 翻译（谷歌翻译）  
 - [X] 翻译单词（爱词霸）  
 - [X] 根据经纬度确定位置（百度地图）  
 - [X] 根据IP看地点  
 
-## （func.py）计划：
+## （image.py）计划：
 
-- [ ] 整合进webapi.py（但因为内容未涉及到爬虫可能搁置）
+- [ ] 整合进func.py

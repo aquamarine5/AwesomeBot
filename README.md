@@ -7,7 +7,7 @@
 
 ## （webyxp）功能&使用介绍：  
 
-*(yxp内容无需登录验证，所以请慎用开玩笑）*  
+*(yxp内容无需登录验证，所以请慎用于开玩笑）*  
 - python webyxp.py yxpRs 1585745 最新  
 看这个id的最新已批改成绩和班级平均分比较  
 - python webyxp.py yxpRs 1585745 生物  

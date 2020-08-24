@@ -155,7 +155,7 @@ class webapi():
                      b"\x08\x09\x10\x01",b"\x08\x02\x10\x01",b"\x08\x07\x10\x01",
                      b"\x08\x06\x10\x01"])
                 print(pst)
-                data=requests.post(url,pst,timeout=(0.5,0.5)).text
+                data=requests.post(url,pst).text
                 dt=data.split("android.intent.action.VIEW")
                 rd=random.randint(0,len(dt)-1)
                 print(rd)

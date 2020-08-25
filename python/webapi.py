@@ -63,6 +63,23 @@ class webapi():
                 for s360 in range(len(sg360)):
                     text+=sg360[s360]["word"]
                     if not s360+1==len(sg360):text+="，"
+            elif arg[1]=="baidu":
+                headersParameters = {
+                    'Connection': 'Keep-Alive',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+                    'Accept-Language': 'en-US,en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
+                    'Accept-Encoding': 'gzip, deflate',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36 Edg/84.0.522.63'
+                }
+                soup=BeautifulSoup(requests.get("http://www.baidu.com/s?wd=%s&ie=utf-8"%urllib.parse.quote(arg[2]),headers=headersParameters).text,features="html.parser")
+                soup=soup.findAll("div",attrs={"class":"op_exactqa_s_answer"})
+                if len(soup)==0:
+                    text="没有找到结果，功能优化中"
+                else:
+                    try:
+                        text=soup[0].a.text.replace(" ","").replace("\n","")
+                    except:
+                        text=soup[0].text.replace(" ","").replace("\n","")
         elif len(arg)==4:
             if arg[1]=="trsWd":
                 if (arg[3]=="YouDao")|(arg[3]=="-"):
@@ -154,11 +171,9 @@ class webapi():
                     [b"\x08\x01\x10\x01",b"\x08\x03\x10\x01",b"\x08\x08\x10\x01",
                      b"\x08\x09\x10\x01",b"\x08\x02\x10\x01",b"\x08\x07\x10\x01",
                      b"\x08\x06\x10\x01"])
-                print(pst)
-                data=requests.post(url,pst).text
+                data=requests.post(url,pst,timeout=(0.5,0.5)).text
                 dt=data.split("android.intent.action.VIEW")
                 rd=random.randint(0,len(dt)-1)
-                print(rd)
                 dt=dt[rd].split("\x10@")[1][3:].split("Z�")
                 text=dt[0].split("R")
                 text=text[0]+"\n"+text[1][1:]

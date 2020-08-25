@@ -14,14 +14,14 @@ class webapi():
         textWrite=True
         text=""
         if len(arg)==3:
-            if arg[1]=="ip":
+            if   arg[1]=="ip":
                 url="https://whois.pconline.com.cn/ip.jsp?ip="+arg[2]
                 text=requests.get(url)
                 text=text.text
                 text=text.replace("\r\n","")
                 text=text.replace("\n","")
                 text=text.replace(" ","")
-####################################################### 
+#######################################################
             elif arg[1]=="pos":
                 position=arg[2].replace("，",",")
                 url="http://api.map.baidu.com/reverse_geocoding/v3/?ak=2qsQNbDMv4WTULwApsVu8IGl7hEr3p3W&output=json&coordtype=wgs84ll&location="+position
@@ -34,6 +34,7 @@ class webapi():
                 else:
                     out=outr["result"]["addressComponent"]
                     text="位置： "+out["country"]+"  "+out["province"]+"  "+out["city"]+" "+out["district"]+"\n"+"地址： "+outr["result"]["formatted_address"]
+#######################################################
             elif arg[1]=="search":
                 urlBd="http://suggestion.baidu.com/su?wd=%s&action=opensearch&ie=UTF-8"%arg[2]
                 print(urlBd)
@@ -63,6 +64,7 @@ class webapi():
                 for s360 in range(len(sg360)):
                     text+=sg360[s360]["word"]
                     if not s360+1==len(sg360):text+="，"
+#######################################################
             elif arg[1]=="baidu":
                 headersParameters = {
                     'Connection': 'Keep-Alive',
@@ -80,12 +82,14 @@ class webapi():
                         text=soup[0].a.text.replace(" ","").replace("\n","")
                     except:
                         text=soup[0].text.replace(" ","").replace("\n","")
+#######################################################
             elif arg[1]=="face":
                 textWrite=False
                 while True:
                     out=self.face()
                     if out==1:out=self.face()
                     else:break
+#######################################################
         elif len(arg)==4:
             if arg[1]=="trsWd":
                 if (arg[3]=="YouDao")|(arg[3]=="-"):
@@ -98,6 +102,7 @@ class webapi():
                     Ts=loads(requests.get(urlTs).text)
                     text="这是%s的相近词解释：\n"%arg[2]
                     for i in Ts["message"]:text+="%s ：%s\n"%(i["key"],i["paraphrase"])
+#######################################################
         elif len(arg)==5:
             if arg[1]=="trs":
                 if (arg[4]=="Baidu")|(arg[3]=="文言文")|(arg[3]=="文言文中文")|(arg[3]=="0"):
@@ -130,6 +135,7 @@ class webapi():
                     myurl = "http://api.fanyi.baidu.com/api/trans/vip/translate?appid=%s&q=%s&from=%s&to=%s&salt=%s&sign=%s"%\
                         (appid,urllib.parse.quote(arg[2]),fromLang,toLang,salt,sign)
                     text=loads(requests.get(myurl).text.encode("utf-8").decode("unicode_escape"))["trans_result"][0]["dst"]
+#######################################################
                 elif(arg[4]=="Google")|(arg[4]=="-")|(arg[4]=="1"):
                     if   arg[3]=="中文":dest="zh-cn"
                     elif arg[3]=="简体中文":dest="zh-cn"
@@ -164,11 +170,13 @@ class webapi():
                     trsor=Translator(service_urls=["translate.google.cn"])
                     inp=arg[2].replace("+"," ")
                     text=trsor.translate(inp,dest=dest).text
+#######################################################
         elif len(arg)==2:
             if arg[1]=="math":
                 textWrite=False
                 url="http://e.anoah.com/api/?q=json/ebag/ValidateCode/getImageCode&info={\"uid\":\"114514\"}"
                 with open(r"D:\Program Source\QQBOT\python\Temp\Math.png","wb+") as f:f.write(requests.get(url).content)
+#######################################################
             elif arg[1]=="photo":
                 url="http://imagzine.oppomobile.com/api/slide_image/channel_image_list"
                 pst=random.choice(
@@ -179,6 +187,59 @@ class webapi():
                 dt=data.split("android.intent.action.VIEW")
                 rd=random.randint(0,len(dt)-1)
                 dt=dt[rd].split("\x10@")[1][3:].split("Z�")
+                text=dt[0].split("R")
+                text=text[0]+"\n"+text[1][1:]
+                img=("http"+(dt[1][1:].split("zbhttp")[1])).split(".jpg")[0]+".jpg"
+                ps="D:\\Program Source\\QQBOT\\python\\Temp\\Photo\\%s.png"%text.replace("\n","").replace("，","").replace("。","").replace("！","")
+                if not (os.path.exists(ps)):
+                    image=requests.get(img)
+                    with open(ps,"wb+") as f:
+                        f.write(image.content)
+                text=ps+"|"+text
+#######################################################
+            elif arg[1]=="hot":
+                url="http://api.weibo.cn/2/guest/page?"\
+                    "from=1781065010&c=wbfastapp&lang=zh_CN&count=20&containerid=106003type%3D25%26t%3D3%26"\
+                    "disable_hot%3D1%26filter_type%3Drealtimehot&lfid=OPPO_qjs"
+                o=loads(requests.get(url).text)
+                o=o["cards"][0]["card_group"]
+                text="微博热搜：\n"
+                for i in range(len(o)):text+=str(i+1)+" "+o[i]["desc"]+"\n"
+#######################################################
+            elif arg[1]=="hotword":
+                url="http://s.search.bilibili.com/main/hotword"
+                o=loads(requests.get(url).text)["list"]
+                text="B站热词：\n"
+                for i in range(len(o)):text=text+o[i]["keyword"]+"，"
+#######################################################
+        self.text=text
+        self.textWrite=textWrite
+#######################################################
+    def face(self):
+        r=random.randint(233333,666666666)
+        print(r)
+        url="http://api.bilibili.com/x/space/acc/info?mid=%s"%r
+        o=loads(requests.get(url).text)["data"]["face"]
+        if o=="http://i0.hdslb.com/bfs/face/member/noface.jpg":
+            return 1
+        else:
+            with open(r"python\Temp\face.png","wb+") as f:f.write(requests.get(o).content)
+####################################################### 
+
+if __name__=="__main__":
+    wb=webapi(arg)
+    try:
+        
+        text=wb.text
+        textWrite=wb.textWrite
+    except BaseException as e:
+        text=e
+        textWrite=True
+    with open(r"D:\Program Source\QQBOT\python\Temp\temp.txt","w+",encoding="UTF-8") as f:
+        if(textWrite):
+            text=str(text)
+            f.write(text)
+            print(text).split("\x10@")[1][3:].split("Z�")
                 text=dt[0].split("R")
                 text=text[0]+"\n"+text[1][1:]
                 img=("http"+(dt[1][1:].split("zbhttp")[1])).split(".jpg")[0]+".jpg"

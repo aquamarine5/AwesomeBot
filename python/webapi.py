@@ -80,6 +80,12 @@ class webapi():
                         text=soup[0].a.text.replace(" ","").replace("\n","")
                     except:
                         text=soup[0].text.replace(" ","").replace("\n","")
+            elif arg[1]=="face":
+                textWrite=False
+                while True:
+                    out=self.face()
+                    if out==1:out=self.face()
+                    else:break
         elif len(arg)==4:
             if arg[1]=="trsWd":
                 if (arg[3]=="YouDao")|(arg[3]=="-"):
@@ -118,7 +124,6 @@ class webapi():
                         self.text="错误的语言\n如需翻译少数语言请使用：翻译 [需要翻译文本] 祖鲁语"
                         self.textWrite=True
                         return
-                    
                     salt = random.randint(32768, 65536)
                     sign = appid + str(arg[2]) + str(salt) + secretKey
                     sign = hashlib.md5(sign.encode()).hexdigest()
@@ -159,7 +164,6 @@ class webapi():
                     trsor=Translator(service_urls=["translate.google.cn"])
                     inp=arg[2].replace("+"," ")
                     text=trsor.translate(inp,dest=dest).text
-                
         elif len(arg)==2:
             if arg[1]=="math":
                 textWrite=False
@@ -191,10 +195,24 @@ class webapi():
                 o=loads(requests.get(url).text)
                 o=o["cards"][0]["card_group"]
                 text="微博热搜：\n"
-                for i in range(len(o)):
-                    text+=str(i+1)+" "+o[i]["desc"]+"\n"
+                for i in range(len(o)):text+=str(i+1)+" "+o[i]["desc"]+"\n"
+            elif arg[1]=="hotword":
+                url="http://s.search.bilibili.com/main/hotword"
+                o=loads(requests.get(url).text)["list"]
+                text="B站热词：\n"
+                for i in range(len(o)):text=text+o[i]["keyword"]+"，"
         self.text=text
         self.textWrite=textWrite
+    def face(self):
+        r=random.randint(233333,666666666)
+        print(r)
+        
+        url="http://api.bilibili.com/x/space/acc/info?mid=%s"%r
+        o=loads(requests.get(url).text)["data"]["face"]
+        if o=="http://i0.hdslb.com/bfs/face/member/noface.jpg":
+            return 1
+        else:
+            with open(r"python\Temp\face.png","wb+") as f:f.write(requests.get(o).content)
 ####################################################### 
 
 if __name__=="__main__":

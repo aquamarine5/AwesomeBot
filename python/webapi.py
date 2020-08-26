@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import random
 import os
 import urllib
+import time
 import hashlib
 arg=sys.argv
 class webapi():
@@ -89,6 +90,21 @@ class webapi():
                     out=self.face()
                     if out==1:out=self.face()
                     else:break
+#######################################################
+            elif arg[1]=="news":
+                with open(r"python\Source\baiduapi.txt") as f:app=eval(f.read())[5]
+                urlNews="http://index.baidu.com/Interface/Newwordgraph/getNews?"\
+                    "region=0&startdate=20200101&enddate=%s&wordlist[0]=%s"%(time.strftime("%Y%m%d", time.localtime()),arg[2])
+                print(urlNews)
+                cookir={"BDUSS":app}
+                o=loads(requests.get(urlNews,cookies=cookir).text)
+                print(o)
+                o=o["data"][0]["news"]
+                text="这是%s的今年新闻：\n"%arg[2]
+                if len(o)==0:text+="\n无相关新闻"
+                for i in range(len(o)):
+                    text=text+o[i]["source"].split(" ")[1]+" "+o[i]["title"].replace("<em>","").replace("</em>","")
+                    if not i+1==len(o):text+="\n"
 #######################################################
         elif len(arg)==4:
             if arg[1]=="trsWd":
@@ -219,7 +235,9 @@ class webapi():
         r=random.randint(233333,666666666)
         print(r)
         url="http://api.bilibili.com/x/space/acc/info?mid=%s"%r
+        print(url)
         o=loads(requests.get(url).text)["data"]["face"]
+        
         if o=="http://i0.hdslb.com/bfs/face/member/noface.jpg":
             return 1
         else:
@@ -227,59 +245,9 @@ class webapi():
 ####################################################### 
 
 if __name__=="__main__":
-    wb=webapi(arg)
+    
     try:
-        
-        text=wb.text
-        textWrite=wb.textWrite
-    except BaseException as e:
-        text=e
-        textWrite=True
-    with open(r"D:\Program Source\QQBOT\python\Temp\temp.txt","w+",encoding="UTF-8") as f:
-        if(textWrite):
-            text=str(text)
-            f.write(text)
-            print(text).split("\x10@")[1][3:].split("Z�")
-                text=dt[0].split("R")
-                text=text[0]+"\n"+text[1][1:]
-                img=("http"+(dt[1][1:].split("zbhttp")[1])).split(".jpg")[0]+".jpg"
-                ps="D:\\Program Source\\QQBOT\\python\\Temp\\Photo\\%s.png"%text.replace("\n","").replace("，","").replace("。","").replace("！","")
-                if not (os.path.exists(ps)):
-                    image=requests.get(img)
-                    with open(ps,"wb+") as f:
-                        f.write(image.content)
-                text=ps+"|"+text
-            elif arg[1]=="hot":
-                url="http://api.weibo.cn/2/guest/page?"\
-                    "from=1781065010&c=wbfastapp&lang=zh_CN&count=20&containerid=106003type%3D25%26t%3D3%26"\
-                    "disable_hot%3D1%26filter_type%3Drealtimehot&lfid=OPPO_qjs"
-                o=loads(requests.get(url).text)
-                o=o["cards"][0]["card_group"]
-                text="微博热搜：\n"
-                for i in range(len(o)):text+=str(i+1)+" "+o[i]["desc"]+"\n"
-            elif arg[1]=="hotword":
-                url="http://s.search.bilibili.com/main/hotword"
-                o=loads(requests.get(url).text)["list"]
-                text="B站热词：\n"
-                for i in range(len(o)):text=text+o[i]["keyword"]+"，"
-        self.text=text
-        self.textWrite=textWrite
-    def face(self):
-        r=random.randint(233333,666666666)
-        print(r)
-        
-        url="http://api.bilibili.com/x/space/acc/info?mid=%s"%r
-        o=loads(requests.get(url).text)["data"]["face"]
-        if o=="http://i0.hdslb.com/bfs/face/member/noface.jpg":
-            return 1
-        else:
-            with open(r"python\Temp\face.png","wb+") as f:f.write(requests.get(o).content)
-####################################################### 
-
-if __name__=="__main__":
-    wb=webapi(arg)
-    try:
-        
+        wb=webapi(arg)
         text=wb.text
         textWrite=wb.textWrite
     except BaseException as e:

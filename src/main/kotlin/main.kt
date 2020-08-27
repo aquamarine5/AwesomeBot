@@ -17,6 +17,7 @@ suspend fun main() {
     val miraiBot = Bot(qqId, password){
         fileBasedDeviceInfo("device.json")
     }.alsoLogin()
+
     val program="\"d:/Program Source/QQBOT/python/webyxp.py\""
     val webapi="\"d:/Program Source/QQBOT/python/webapi.py\""
     val func="\"d:/Program Source/QQBOT/python/func.py\""
@@ -29,6 +30,7 @@ suspend fun main() {
     var photopath=""
     var command=""
     miraiBot.subscribeAlways<MessageEvent> { event ->
+        type=1
         try{
             val message = event.message.content
             //event.message[Image]?.queryUrl()
@@ -43,6 +45,7 @@ suspend fun main() {
                     photopath=imageMath
                 }
                 "zyb","作业帮","作业"->{
+                    println(666)
                     var num=-1
                     num = if (ct.size==2){
                         0
@@ -223,7 +226,8 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
                     }
                 }
                 else->{
-                    type=0
+                    type=100
+                    println(666)
                 }
             }
             println(type)
@@ -232,11 +236,13 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
                     val rt=command.execute()
                     rt.waitFor()
                     reply(File(temp).readText())
+                    type=0
                 }
                 2->{
                     val rt=command.execute()
                     rt.waitFor()
                     File(photopath).sendAsImage()
+                    type=0
                 }
             }
         }catch(e:Exception){reply(e.toString())}

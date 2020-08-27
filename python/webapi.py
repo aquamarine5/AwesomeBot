@@ -98,7 +98,6 @@ class webapi():
                 print(urlNews)
                 cookir={"BDUSS":app}
                 o=loads(requests.get(urlNews,cookies=cookir).text)
-                print(o)
                 o=o["data"][0]["news"]
                 text="这是%s的今年新闻：\n"%arg[2]
                 if len(o)==0:text+="\n无相关新闻"
@@ -118,6 +117,22 @@ class webapi():
                     Ts=loads(requests.get(urlTs).text)
                     text="这是%s的相近词解释：\n"%arg[2]
                     for i in Ts["message"]:text+="%s ：%s\n"%(i["key"],i["paraphrase"])
+#######################################################
+            elif arg[1]=="zyb":
+                headersParameters = {
+                    'Connection': 'Keep-Alive',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+                    'Accept-Language': 'en-US,en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
+                    'Accept-Encoding': 'gzip, deflate',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36 Edg/84.0.522.63'
+                }
+                urlBd="http://www.baidu.com/s?ie=UTF-8&wd=site:www.zybang.com%%20%s"%arg[2]
+                o=BeautifulSoup(requests.get(urlBd,headers=headersParameters).text,features="html.parser")
+                link=o.findAll("h3",attrs={"class","t"})[0].a["href"]
+                zyb=BeautifulSoup(requests.get(link).text,features="html.parser")
+                title=zyb.findAll("dl",attrs={"class":"card qb_wgt-question nobefore"})[int(arg[3])].dd.span.string
+                answer=str(zyb.findAll("dl",attrs={"id":"good-answer"})[0].dd.span).replace("<span>","").replace("</span>","").replace("<br/>","\n")
+                text=title+"的答案是：\n"+answer
 #######################################################
         elif len(arg)==5:
             if arg[1]=="trs":
@@ -232,12 +247,11 @@ class webapi():
         self.textWrite=textWrite
 #######################################################
     def face(self):
-        r=random.randint(233333,666666666)
+        r=random.randint(233,666666666)
         print(r)
         url="http://api.bilibili.com/x/space/acc/info?mid=%s"%r
         print(url)
         o=loads(requests.get(url).text)["data"]["face"]
-        
         if o=="http://i0.hdslb.com/bfs/face/member/noface.jpg":
             return 1
         else:
@@ -245,9 +259,9 @@ class webapi():
 ####################################################### 
 
 if __name__=="__main__":
-    
+    wb=webapi(arg)
     try:
-        wb=webapi(arg)
+        
         text=wb.text
         textWrite=wb.textWrite
     except BaseException as e:

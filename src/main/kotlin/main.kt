@@ -7,6 +7,8 @@ import net.mamoe.mirai.message.data.*
 import kotlinx.coroutines.InternalCoroutinesApi
 import java.io.File
 import java.lang.Exception
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 
 @InternalCoroutinesApi
@@ -45,7 +47,7 @@ suspend fun main() {
                     photopath=imageMath
                 }
                 "zyb","作业帮","作业"->{
-                    println(666)
+                    type=0
                     var num=-1
                     num = if (ct.size==2){
                         0
@@ -53,6 +55,25 @@ suspend fun main() {
                         ct[2].toInt()
                     }
                     command = "python $webapi zyb ${ct[1]} $num"
+                    println(command)
+                    val rt=command.execute()
+                    rt.waitFor()
+                    val msg=File(temp).readText(StandardCharsets.UTF_8).split("{img}")
+                    buildMessageChain {
+                        if(msg.size==1){
+                            add(msg[0])
+                        }
+                        else{
+                        for ((index,m) in msg.withIndex())
+                            {
+                                add(m)
+                                if(msg.size!=(index+1)){
+                                    add(uploadImage(File("D:\\Program Source\\QQBOT\\python\\Temp\\Study\\$index.jpg")))
+                                }
+
+                            }
+                        }
+                    }.send()
                 }
                 "yxpInfo", "yxp信息" -> {
                     command = "python $program yxpInfo ${ct[1]}"
@@ -69,6 +90,8 @@ suspend fun main() {
                 "yxpPic", "yxppic", "yxp照片" -> {
                     type=0
                     command = "python $program yxpPic ${ct[1]}"
+                    val rt=command.execute()
+                    rt.waitFor()
                     val file = File(temp)
                     if (file.readText() == "") {
                         reply("用户不存在")
@@ -159,6 +182,8 @@ github.com/awesomehhhhh/ebagqbot
 翻译单词 需要翻译的单词 -> 返回单词英文结果和相关信息（trsWd）
 搜索建议 信息 ->返回搜索建议（idea）
 帮助 ->返回帮助（help）
+作业帮 题目 ->返回作业帮搜题（zyb）
+新闻 内容 ->返回最近新闻（测试）（news）
 性别判断 人名字 ->根据人名判断性别（ng）
 eat 文字 ->生成表情包
 二维码生成 内容 ->生成二维码（qrcode）（仅限英文）
@@ -189,12 +214,16 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
                 "qrcode", "二维码生成" -> {
                     type=0
                     val qrtext = message.replace("qrcode ", "").replace("二维码生成 ","")
+                    val rt=command.execute()
+                    rt.waitFor()
                     command = "myqr $qrtext -d \"D:/Program Source/QQBOT/python/Temp\""
                     photopath="D:/Program Source/QQBOT/python/Temp/qrcode.png"
                 }
                 "photo","图片","每日一图"->{
                     type=0
                     command = "python $webapi photo"
+                    val rt=command.execute()
+                    rt.waitFor()
                     val f=File(temp).readText().split("|")
                     File(f[0]).sendAsImage()
                     reply(f[1])

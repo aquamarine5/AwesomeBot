@@ -6,6 +6,7 @@ from googletrans.constants import (LANGUAGES)
 from bs4 import BeautifulSoup
 import random
 import os
+import re
 import urllib
 import time
 import hashlib
@@ -14,6 +15,13 @@ class webapi():
     def __init__(self,arg):
         textWrite=True
         text=""
+        headersParameters = {
+            'Connection': 'Keep-Alive',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+            'Accept-Language': 'en-US,en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
+            'Accept-Encoding': 'gzip, deflate',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36 Edg/84.0.522.63'
+        }
         if len(arg)==3:
             if   arg[1]=="ip":
                 url="https://whois.pconline.com.cn/ip.jsp?ip="+arg[2]
@@ -67,13 +75,6 @@ class webapi():
                     if not s360+1==len(sg360):text+="，"
 #######################################################
             elif arg[1]=="baidu":
-                headersParameters = {
-                    'Connection': 'Keep-Alive',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                    'Accept-Language': 'en-US,en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
-                    'Accept-Encoding': 'gzip, deflate',
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36 Edg/84.0.522.63'
-                }
                 soup=BeautifulSoup(requests.get("http://www.baidu.com/s?wd=%s&ie=utf-8"%urllib.parse.quote(arg[2]),headers=headersParameters).text,features="html.parser")
                 soup=soup.findAll("div",attrs={"class":"op_exactqa_s_answer"})
                 if len(soup)==0:
@@ -119,19 +120,25 @@ class webapi():
                     for i in Ts["message"]:text+="%s ：%s\n"%(i["key"],i["paraphrase"])
 #######################################################
             elif arg[1]=="zyb":
-                headersParameters = {
-                    'Connection': 'Keep-Alive',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                    'Accept-Language': 'en-US,en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
-                    'Accept-Encoding': 'gzip, deflate',
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36 Edg/84.0.522.63'
-                }
                 urlBd="http://www.baidu.com/s?ie=UTF-8&wd=site:www.zybang.com%%20%s"%arg[2]
                 o=BeautifulSoup(requests.get(urlBd,headers=headersParameters).text,features="html.parser")
-                link=o.findAll("h3",attrs={"class","t"})[0].a["href"]
-                zyb=BeautifulSoup(requests.get(link).text,features="html.parser")
-                title=zyb.findAll("dl",attrs={"class":"card qb_wgt-question nobefore"})[int(arg[3])].dd.span.string
-                answer=str(zyb.findAll("dl",attrs={"id":"good-answer"})[0].dd.span).replace("<span>","").replace("</span>","").replace("<br/>","\n")
+                link=o.findAll("h3",attrs={"class","t"})[int(arg[3])].a["href"]
+                zyb=BeautifulSoup(re.sub("<br>|<br/>","",requests.get(link).text),features="html.parser")
+                t=zyb.findAll("dl",attrs={"class":"card qb_wgt-question nobefore"})[0].dd.span
+                tbs=t.findAll("img")
+                tf=re.findall(r"<img(.*?)/>",str(t))
+                title=re.sub(r"<img(.*?)/>","{img}",str(t))
+                title=re.sub(r"<br>|</br>","\n",title)
+                title=re.sub(r'<span(.*?)">|<table(.*?)>|</table>|</span>|'\
+                    r'</td>|</tr>|<td(.*?)>|<tr(.*?)>|<sub>|</sub>',"",title)
+                count=0
+                for i in range(len(tf)): 
+                    with open("python\\Temp\\Study\\%s.jpg"%count,"wb+") as f:f.write(requests.get(tbs[i]["src"]).content)
+                    count+=1
+                try:
+                    answer=zyb.findAll("dl",attrs={"id":"good-answer"})[0].dd.span.get_text()
+                except:
+                    raise Exception("❌以下为可能可用的信息：\n无优质答案，请在指令后加\" 1\"或其他数字")
                 text=title+"的答案是：\n"+answer
 #######################################################
         elif len(arg)==5:
@@ -259,9 +266,8 @@ class webapi():
 ####################################################### 
 
 if __name__=="__main__":
-    wb=webapi(arg)
     try:
-        
+        wb=webapi(arg)
         text=wb.text
         textWrite=wb.textWrite
     except BaseException as e:

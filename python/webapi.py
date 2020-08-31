@@ -264,6 +264,7 @@ class webapi():
         else:
             with open(r"python\Temp\face.png","wb+") as f:f.write(requests.get(o).content)
 ####################################################### 
+    def faceqq(self):pass
 
 if __name__=="__main__":
     try:

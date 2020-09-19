@@ -50,7 +50,7 @@
 #### 可视化实现：  
 - [X] 见：QQbot（main.kt有说）  
 - [X] Pydroid、Powershell、cmd、Python支持  
-- [ ] python.tkinter（无 忘干净了）  
+- [ ] *python.tkinter（无 忘干净了）*（未来参赛？  
 - [ ] Android 或者 C# WPF 程序（完全没有准备中）  
 > （还得重写代码懒）（Python转java/c#/kotlin）  
 > 哦我在痴心妄想，我unity还没做（

@@ -1,13 +1,15 @@
+import io.ktor.http.cio.websocket.pinger
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.join
 import net.mamoe.mirai.message.*
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.contact.PermissionDeniedException
 import kotlinx.coroutines.InternalCoroutinesApi
+import net.mamoe.mirai.contact.Member
 import java.io.File
 import java.lang.Exception
-import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 
 
@@ -25,16 +27,37 @@ suspend fun main() {
     val func="\"d:/Program Source/QQBOT/python/func.py\""
     val image="\"d:/Program Source/QQBOT/python/image.py\""
     val temp="D:/Program Source/QQBOT/python/Temp/temp.txt"
+    val tempCheck="D:/Program Source/QQBOT/python/Temp/check.txt"
     val imageTemp="D:/Program Source/QQBOT/python/Temp/temp.jpg"
     val imageMath="D:/Program Source/QQBOT/python/Temp/Math.png"
     val imagePrivate="D:/Program Source/QQBOT/python/Temp/FacePrivate.jpg"
     var type=1
     var photopath=""
     var command=""
-    miraiBot.subscribeAlways<MessageEvent> { event ->
+    miraiBot.subscribeAlways<GroupMessageEvent> { event ->
+
         type=1
         try{
             val message = event.message.content
+            if(message.length>=50){
+                "python $program check $message".execute()
+                val result=File(temp).readText()
+                if (result=="y"){}
+                if(result=="n"){
+                    try{
+                        event.sender.kick("Bot测试")
+                    }
+                    catch ( err:PermissionDeniedException){
+                        reply(At(event.sender)+"有违禁信息但权限原因无法踢走")
+                    }
+                    finally {
+                        reply(At(event.sender)+"有违禁信息")
+                    }
+                }
+                //
+
+            }
+            else{
             //event.message[Image]?.queryUrl()
             val ct = message.split(" ")
             when (ct[0]) {
@@ -137,19 +160,32 @@ suspend fun main() {
                     command = "python $webapi trsWd ${ct[1]} $engine"
                 }
                 "trs", "翻译", "translate" -> {
-                    var engine = ""
-                    var dest = "zh-cn"
-                    engine = if (ct.size == 3) {
-                        "-"
-                    } else {
-                        ct[3]
+                    if(false){
+                        var engine = ""
+                        var dest = "zh-cn"
+                        if(ct.size==1){
+                            reply("请输入翻译参数")
+                            return@subscribeAlways
+                        }
+                        if(ct.size==2){
+                            reply("请输入翻译语言")
+                            return@subscribeAlways
+                        }
+                        engine = if (ct.size == 3) {
+                            "-"
+                        } else {
+                            ct[3]
+                        }
+                        if (ct.size == 2) {
+                            engine = "-"
+                        } else {
+                            dest = ct[2]
+                        }
+                        command = "python $webapi trs ${ct[1]} $dest $engine"
                     }
-                    if (ct.size == 2) {
-                        engine = "-"
-                    } else {
-                        dest = ct[2]
+                    else{
+                        reply("暂时停用，bug过多")
                     }
-                    command = "python $webapi trs ${ct[1]} $dest $engine"
                 }
                 "搜索建议", "idea", "search" -> {
                     command = "python $webapi search ${ct[1]}"
@@ -166,14 +202,14 @@ suspend fun main() {
                 }
                 "face","头像"->{
                     type=2
-                    command = "python $webapi face -"
+                    command = "python $webapi face b"
                     photopath="D:\\Program Source\\QQBOT\\python\\Temp\\face.png"
                 }
                 "help", "帮助" -> {
                     type=0
                     if(ct.size == 1){
                     reply("""->括号内为简写如："搜索建议 机器人"可替换成"idea 机器人"<-
-github.com/awesomehhhhh/ebagqbot
+github.com/awesomehhhhh/AwesomeBot
 翻译 需要翻译的文字 翻译的语种 -> 返回翻译结果（trs）
 头像 ->返回某个b站头像（face）
 热词 ->返回b站热词（hotword）
@@ -214,10 +250,11 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
                 "qrcode", "二维码生成" -> {
                     type=0
                     val qrtext = message.replace("qrcode ", "").replace("二维码生成 ","")
+                    command = "myqr $qrtext -d \"D:/Program Source/QQBOT/python/Temp\""
                     val rt=command.execute()
                     rt.waitFor()
-                    command = "myqr $qrtext -d \"D:/Program Source/QQBOT/python/Temp\""
                     photopath="D:/Program Source/QQBOT/python/Temp/qrcode.png"
+                    File(photopath).sendAsImage()
                 }
                 "photo","图片","每日一图"->{
                     type=0
@@ -274,9 +311,10 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
                     type=0
                 }
             }
+            }
         }catch(e:Exception){reply(e.toString())}
     }
-    miraiBot.join() // 等待 Bot 离线, 避免主线程退出
+    miraiBot.join() // 等待 机器人 离线, 避免主线程退出
 }
 fun String.execute(): Process {
     val runtime = Runtime.getRuntime()

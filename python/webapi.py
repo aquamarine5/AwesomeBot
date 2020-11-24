@@ -15,6 +15,14 @@ class webapi():
     def __init__(self,arg):
         textWrite=True
         text=""
+        labelDict={
+            1:"暴恐违禁",
+            2:"文本色情",
+            3:"政治敏感",
+            4:"恶意推广",
+            5:"低俗辱骂",
+            6:"低俗灌水"
+        }
         forBaiduHeader={
             "Content-Type":"application/x-www-form-urlencoded",
             "Referer":"https://ai.baidu.com/tech/imagerecognition/general",
@@ -63,20 +71,24 @@ class webapi():
                 text="这是%s的搜索建议：\n"%arg[2]
                 text+="-> 百度：\n"
                 for bd in range(len(sgBd)):
+                    if bd>=10:break
                     text+=sgBd[bd]
                     if not bd+1==len(sgBd):text+="，"
                 text+="\n-> 必应：\n"
                 for bing in range(len(sgBing)):
+                    if bing>=10:break
                     if sgBing[bing].get_text()=="":continue
                     if sgBing[bing].get_text()=="国际版":continue
                     text+=sgBing[bing].get_text()
                     if not bing+1==len(sgBing):text+="，"
                 text+="\n-> 搜狗：\n"
                 for sogou in range(len(sgSg)):
+                    if sogou>=10:break
                     text+=sgSg[sogou]
                     if not sogou+1==len(sgSg):text+="，"
                 text+="\n-> 360搜索：\n"
                 for s360 in range(len(sg360)):
+                    if s360>=10:break
                     text+=sg360[s360]["word"]
                     if not s360+1==len(sg360):text+="，"
 #######################################################
@@ -215,87 +227,95 @@ class webapi():
                 o=loads(requests.get(url).text)["list"]
                 text="B站热词：\n"
                 for i in range(len(o)):text=text+o[i]["keyword"]+"，"
+        if(len(arg)!=1):
 ######################################################
-        if arg[1]=="check":
-            url="https://ai.baidu.com/aidemo"
-            head=forBaiduHeader
-            head["Referer"]="https://ai.baidu.com/tech/textcensoring"
-            tex=f"content={urllib.parse.quote(''.join(arg[2:]))}&type=textcensor&apiType=censor&requestTime=1606136419887&token=3466a61eb8"
-            t=requests.post(url,tex,headers=head).text
-            l=loads(t)["data"]["result"]["reject"]
-            if(len(l)==0):text="y"
-            else:
-                text="n"
-        if arg[1]=="trs":
-            if (arg[2]=="粤语")|(arg[2]=="文言文")|(arg[2]=="文言文中文")|(arg[2]=="粤语中文")|(arg[3]=="b"):#翻译（百度）
-                app=[]
-                with open(r"D:\Program Source\QQBOT\python\Source\baiduapi.txt") as f:app=eval(f.read())
-                appid = app[3]
-                secretKey = app[4]
-                fromLang = 'auto'
-                if arg[2]=="中文":toLang="zh"
-                elif arg[2]=="文言文中文":
-                    toLang="zh"
-                    fromLang="wyw"
-                elif arg[2]=="粤语中文":
-                    toLang="zh"
-                    fromLang="yue"
-                elif arg[2]=="文言文":toLang="wyw"
-                elif arg[2]=="粤语":toLang="yue"
-                elif arg[2]=="繁体":toLang="cht"
-                elif arg[2]=="繁体中文":toLang="cht"
-                elif arg[2]=="韩语":toLang="kor"
-                elif arg[2]=="泰语":toLang="th"
-                elif arg[2]=="阿拉伯语":toLang="ara"
-                elif arg[2]=="荷兰语":toLang="nl"
-                elif arg[2]=="英文":toLang="en"
-                elif arg[2]=="英语":toLang="en"
+            if arg[1]=="check":
+                s=''.join(arg[2:])
+                
+                textWrite=False
+                url="https://ai.baidu.com/aidemo"
+                head=forBaiduHeader
+                head["Referer"]="https://ai.baidu.com/tech/textcensoring"
+                tex=f"content={urllib.parse.quote(s)}&type=textcensor&apiType=censor&requestTime=1606136419887&token=3466a61eb8"
+                t=requests.post(url,tex,headers=head).text
+                t=t.encode("utf-8").decode("unicode_escape")
+                l=loads(t)["data"]["result"]["reject"]
+                if(len(l)==0):text="y"
                 else:
-                    self.text="错误的语言\n如需翻译少数语言请使用：翻译 [需要翻译文本] 祖鲁语"
-                    self.textWrite=True
-                    return
-                salt = random.randint(32768, 65536)
-                sign = appid + str(arg[4]) + str(salt) + secretKey
-                sign = hashlib.md5(sign.encode()).hexdigest()
-                q=urllib.parse.quote(arg[3:])
-                myurl = f"http://api.fanyi.baidu.com/api/trans/vip/translate?appid={appid}&q={urllib.parse.quote(arg[4])}&from={fromLang}&to={toLang}&salt={salt}&sign={sign}"
-                text=loads(requests.get(myurl).text.encode("utf-8").decode("unicode_escape"))["trans_result"][0]["dst"]
-#######################################################
-            elif(arg[3]=="Google")|(arg[3]=="-")|(arg[3]=="1"):#翻译（谷歌）
-                if   arg[2]=="中文":                                      dest="zh-cn"
-                elif arg[2]=="简体中文":                                   dest="zh-cn"
-                elif arg[2]=="繁体中文":                                   dest="zh-tw"
-                elif arg[2]=="日语":                                      dest="ja"
-                elif (arg[2]=="英语")|(arg[2]=="英文"):                    dest="en"
-                elif arg[2]=="德语":                                      dest="de"
-                elif arg[2]=="加泰罗尼亚语":                               dest="ca"
-                elif arg[2]=="塔吉克语":                                   dest="tg"
-                elif arg[2]=="孟加拉语":                                   dest="bn"
-                elif arg[2]=="法语":                                      dest="fr"
-                elif (arg[2]=="犹太语")|(arg[2]=="依地语"):                dest="yi"
-                elif arg[2]=="芬兰语":                                     dest="fi"
-                elif arg[2]=="葡萄牙语":                                   dest="pt"
-                elif (arg[2]=="保加利亚")|(arg[2]=="保加利亚语"):           dest="bg"
-                elif arg[2]=="祖鲁语":                                     dest="zu"
-                elif (arg[2]=="朝鲜语")|(arg[2]=="韩国语")|(arg[2]=="韩语"):dest="ko"
-                elif arg[2]=="库尔德语":                                   dest="ku"
-                elif arg[2]=="南非语":                                     dest="af"
-                elif arg[2]=="希腊语":                                     dest="el"
-                elif arg[2]=="西班牙语":                                   dest="es"
-                elif (arg[2]=="象形")|(arg[2]=="阿姆哈拉文"):              dest="am"
-                elif (arg[2]=="阿拉伯语")|(arg[2]=="阿拉伯"):              dest="ar"
-                else:
-                    if arg[2] not in LANGUAGES:
-                        self.text="错误的语言，如需翻译文言文等中文变体请使用：\n 翻译 [需要翻译文本] 文言文\n文言文转中文请使用：翻译 [需要翻译文本] 文言文中文"\
-                            "\n空格请用+代替谢谢"
+                    text=labelDict[l[0]["label"]]+f"\n{str(l)}"
+                with open(r"D:/Program Source/QQBOT/python/Temp/check.txt","w+",encoding="UTF-8") as f:
+                    f.write(text)
+                    print(text)
+            if arg[1]=="trs":
+                if (arg[2]=="粤语")|(arg[2]=="文言文")|(arg[2]=="文言文中文")|(arg[2]=="粤语中文")|(arg[3]=="b"):#翻译（百度）
+                    app=[]
+                    with open(r"D:\Program Source\QQBOT\python\Source\baiduapi.txt") as f:app=eval(f.read())
+                    appid = app[3]
+                    secretKey = app[4]
+                    fromLang = 'auto'
+                    if arg[2]=="中文":toLang="zh"
+                    elif arg[2]=="文言文中文":
+                        toLang="zh"
+                        fromLang="wyw"
+                    elif arg[2]=="粤语中文":
+                        toLang="zh"
+                        fromLang="yue"
+                    elif arg[2]=="文言文":toLang="wyw"
+                    elif arg[2]=="粤语":toLang="yue"
+                    elif arg[2]=="繁体":toLang="cht"
+                    elif arg[2]=="繁体中文":toLang="cht"
+                    elif arg[2]=="韩语":toLang="kor"
+                    elif arg[2]=="泰语":toLang="th"
+                    elif arg[2]=="阿拉伯语":toLang="ara"
+                    elif arg[2]=="荷兰语":toLang="nl"
+                    elif arg[2]=="英文":toLang="en"
+                    elif arg[2]=="英语":toLang="en"
+                    else:
+                        self.text="错误的语言\n如需翻译少数语言请使用：翻译 [需要翻译文本] 祖鲁语"
                         self.textWrite=True
                         return
+                    salt = random.randint(32768, 65536)
+                    sign = appid + str(arg[4]) + str(salt) + secretKey
+                    sign = hashlib.md5(sign.encode()).hexdigest()
+                    q=urllib.parse.quote(arg[3:])
+                    myurl = f"http://api.fanyi.baidu.com/api/trans/vip/translate?appid={appid}&q={urllib.parse.quote(arg[4])}&from={fromLang}&to={toLang}&salt={salt}&sign={sign}"
+                    text=loads(requests.get(myurl).text.encode("utf-8").decode("unicode_escape"))["trans_result"][0]["dst"]
+    #######################################################
+                elif(arg[3]=="Google")|(arg[3]=="-")|(arg[3]=="1"):#翻译（谷歌）
+                    if   arg[2]=="中文":                                      dest="zh-cn"
+                    elif arg[2]=="简体中文":                                   dest="zh-cn"
+                    elif arg[2]=="繁体中文":                                   dest="zh-tw"
+                    elif arg[2]=="日语":                                      dest="ja"
+                    elif (arg[2]=="英语")|(arg[2]=="英文"):                    dest="en"
+                    elif arg[2]=="德语":                                      dest="de"
+                    elif arg[2]=="加泰罗尼亚语":                               dest="ca"
+                    elif arg[2]=="塔吉克语":                                   dest="tg"
+                    elif arg[2]=="孟加拉语":                                   dest="bn"
+                    elif arg[2]=="法语":                                      dest="fr"
+                    elif (arg[2]=="犹太语")|(arg[2]=="依地语"):                dest="yi"
+                    elif arg[2]=="芬兰语":                                     dest="fi"
+                    elif arg[2]=="葡萄牙语":                                   dest="pt"
+                    elif (arg[2]=="保加利亚")|(arg[2]=="保加利亚语"):           dest="bg"
+                    elif arg[2]=="祖鲁语":                                     dest="zu"
+                    elif (arg[2]=="朝鲜语")|(arg[2]=="韩国语")|(arg[2]=="韩语"):dest="ko"
+                    elif arg[2]=="库尔德语":                                   dest="ku"
+                    elif arg[2]=="南非语":                                     dest="af"
+                    elif arg[2]=="希腊语":                                     dest="el"
+                    elif arg[2]=="西班牙语":                                   dest="es"
+                    elif (arg[2]=="象形")|(arg[2]=="阿姆哈拉文"):              dest="am"
+                    elif (arg[2]=="阿拉伯语")|(arg[2]=="阿拉伯"):              dest="ar"
                     else:
-                        dest=arg[3]
-                trsor=Translator(service_urls=["translate.google.cn"])
-                inp=arg[2].replace("+"," ")
-                text=trsor.translate(inp,dest=dest).text
-        elif arg[1]=="trsmt":pass#翻译20次生草机
+                        if arg[2] not in LANGUAGES:
+                            self.text="错误的语言，如需翻译文言文等中文变体请使用：\n 翻译 [需要翻译文本] 文言文\n文言文转中文请使用：翻译 [需要翻译文本] 文言文中文"\
+                                "\n空格请用+代替谢谢"
+                            self.textWrite=True
+                            return
+                        else:
+                            dest=arg[3]
+                    trsor=Translator(service_urls=["translate.google.cn"])
+                    inp=arg[2].replace("+"," ")
+                    text=trsor.translate(inp,dest=dest).text
+            elif arg[1]=="trsmt":pass#翻译20次生草机
 #######################################################
         self.text=text
         self.textWrite=textWrite
@@ -315,9 +335,9 @@ class webapi():
 ####################################################### 
 
 if __name__=="__main__":
-    #wb=webapi(arg)
+    wb=webapi(arg)
     try:
-        wb=webapi(arg)
+        #wb=webapi(arg)
         text=wb.text
         textWrite=wb.textWrite
     except BaseException as e:

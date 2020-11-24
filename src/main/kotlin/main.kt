@@ -1,18 +1,30 @@
-import io.ktor.http.cio.websocket.pinger
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.join
 import net.mamoe.mirai.message.*
+import net.mamoe.mirai.data.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.contact.PermissionDeniedException
 import kotlinx.coroutines.InternalCoroutinesApi
-import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.LowLevelAPI
 import java.io.File
 import java.lang.Exception
 import java.nio.charset.StandardCharsets
 
+val program="\"d:/Program Source/QQBOT/python/webyxp.py\""
+val webapi="\"d:/Program Source/QQBOT/python/webapi.py\""
+val func="\"d:/Program Source/QQBOT/python/func.py\""
+val image="\"d:/Program Source/QQBOT/python/image.py\""
+val temp="D:/Program Source/QQBOT/python/Temp/temp.txt"
+val elog="D:/Program Source/QQBOT/python/Temp/t.log"
+val tempCheck="D:/Program Source/QQBOT/python/Temp/check.txt"
+val imageTemp="D:/Program Source/QQBOT/python/Temp/temp.jpg"
+val imageMath="D:/Program Source/QQBOT/python/Temp/Math.png"
+val imagePrivate="D:/Program Source/QQBOT/python/Temp/FacePrivate.jpg"
 
+
+@LowLevelAPI
 @InternalCoroutinesApi
 suspend fun main() {
 
@@ -21,41 +33,15 @@ suspend fun main() {
     val miraiBot = Bot(qqId, password){
         fileBasedDeviceInfo("device.json")
     }.alsoLogin()
-
-    val program="\"d:/Program Source/QQBOT/python/webyxp.py\""
-    val webapi="\"d:/Program Source/QQBOT/python/webapi.py\""
-    val func="\"d:/Program Source/QQBOT/python/func.py\""
-    val image="\"d:/Program Source/QQBOT/python/image.py\""
-    val temp="D:/Program Source/QQBOT/python/Temp/temp.txt"
-    val tempCheck="D:/Program Source/QQBOT/python/Temp/check.txt"
-    val imageTemp="D:/Program Source/QQBOT/python/Temp/temp.jpg"
-    val imageMath="D:/Program Source/QQBOT/python/Temp/Math.png"
-    val imagePrivate="D:/Program Source/QQBOT/python/Temp/FacePrivate.jpg"
     var type=1
     var photopath=""
     var command=""
     miraiBot.subscribeAlways<GroupMessageEvent> { event ->
-
         type=1
         try{
             val message = event.message.content
             if(message.length>=50){
-                "python $program check $message".execute()
-                val result=File(temp).readText()
-                if (result=="y"){}
-                if(result=="n"){
-                    try{
-                        event.sender.kick("Bot测试")
-                    }
-                    catch ( err:PermissionDeniedException){
-                        reply(At(event.sender)+"有违禁信息但权限原因无法踢走")
-                    }
-                    finally {
-                        reply(At(event.sender)+"有违禁信息")
-                    }
-                }
-                //
-
+                check(event)
             }
             else{
             //event.message[Image]?.queryUrl()
@@ -160,7 +146,7 @@ suspend fun main() {
                     command = "python $webapi trsWd ${ct[1]} $engine"
                 }
                 "trs", "翻译", "translate" -> {
-                    if(false){
+                    if(true){
                         var engine = ""
                         var dest = "zh-cn"
                         if(ct.size==1){
@@ -312,10 +298,41 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
                 }
             }
             }
-        }catch(e:Exception){reply(e.toString())}
+        }catch(e:Exception){
+            reply(e.toString())
+            e.printStackTrace()
+        }
     }
+
     miraiBot.join() // 等待 机器人 离线, 避免主线程退出
 }
+@LowLevelAPI
+suspend fun check(event: GroupMessageEvent){
+    if(event.sender.id== 2854196310L)return
+    if(event.sender.permission.level==0)return
+    if(event.message.content.contains("aa")){}
+    //val a=event.bot._lowLevelGetGroupHonorListData(event.group.id,type = GroupHonorType.ACTIVE)?.actorList
+    //print(a?.size)
+    //print(a?.get(1)?.name)
+
+    //print(event.bot._lowLevelGetGroupActiveData(event.group.id).info?.joinNum.toString())
+    val process = "python $webapi check \"${event.message.content}\"".execute()
+    print("python $webapi check \"${event.message.content}\"")
+    process.waitFor()
+    val result = File(tempCheck).readText()
+    if (result == "y") {print("\r\n通过") } else
+    {
+        try {
+            event.sender.kick("Bot测试")
+        } catch (err: PermissionDeniedException) {
+            event.reply(At(event.sender) + "有违禁信息但权限原因无法踢走\n原因：$result")
+        } finally {
+            event.reply(At(event.sender) + "有违禁信息\n原因：$result")
+        }
+        File(elog).writeText(File(elog).readText() + "\n" + event.senderName + " " + event.message.content)
+    }
+}
+
 fun String.execute(): Process {
     val runtime = Runtime.getRuntime()
     return runtime.exec(this)

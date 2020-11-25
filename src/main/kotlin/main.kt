@@ -36,6 +36,7 @@ suspend fun main() {
     var type=1
     var photopath=""
     var command=""
+    //miraiBot.getGroup(830875502L).sendMessage("机器人 on")
     miraiBot.subscribeAlways<GroupMessageEvent> { event ->
         type=1
         try{
@@ -145,36 +146,35 @@ suspend fun main() {
                     }
                     command = "python $webapi trsWd ${ct[1]} $engine"
                 }
-                "trs", "翻译", "translate" -> {
-                    if(true){
-                        var engine = ""
-                        var dest = "zh-cn"
-                        if(ct.size==1){
-                            reply("请输入翻译参数")
-                            return@subscribeAlways
-                        }
-                        if(ct.size==2){
-                            reply("请输入翻译语言")
-                            return@subscribeAlways
-                        }
-                        engine = if (ct.size == 3) {
-                            "-"
-                        } else {
-                            ct[3]
-                        }
-                        if (ct.size == 2) {
-                            engine = "-"
-                        } else {
-                            dest = ct[2]
-                        }
-                        command = "python $webapi trs ${ct[1]} $dest $engine"
+                "trsg","谷歌翻译","翻译谷歌","translate_google","翻译g"->{
+                    if(ct.size==1){
+                        reply("请输入翻译参数")
+                        return@subscribeAlways
                     }
-                    else{
-                        reply("暂时停用，bug过多")
+                    if(ct.size==2){
+                        reply("请输入翻译语言")
+                        return@subscribeAlways
                     }
+                    command = "python $webapi trs ${ct[1]} g ${ct.dropLast(2).joinToString(" ")}"
+                    print(command)
                 }
+                "trs", "翻译", "translate" -> {
+                    if(ct.size==1){
+                        reply("请输入翻译参数")
+                        return@subscribeAlways
+                    }
+                    if(ct.size==2){
+                        reply("请输入翻译语言")
+                        return@subscribeAlways
+                    }
+                    command = "python $webapi trs ${ct[1]} b ${ct.drop(2).joinToString(" ")}"
+                    print(command)
+                }
+
                 "搜索建议", "idea", "search" -> {
-                    command = "python $webapi search ${ct[1]}"
+                    type=0
+                    "python $webapi search ${ct[1]}".execute().waitFor()
+                    reply(File(temp).readText()).recallIn(10000)
                 }
                 "baidu","百度"->{
                     command = "python $webapi baidu ${ct[1]}"
@@ -210,12 +210,28 @@ github.com/awesomehhhhh/AwesomeBot
 eat 文字 ->生成表情包
 二维码生成 内容 ->生成二维码（qrcode）（仅限英文）
 数学题 ->返回数学题""".trimIndent())}
-                    else if (ct.size == 2){reply("""支持的翻译语种：
+                    else if (ct.size == 2){
+                        if(ct[1]=="谷歌翻译"){
+                            reply("""支持的翻译语种：
+（另：谷歌翻译服务器日常土豆）
 简体中文，繁体中文，文言文，粤语，
 日语，英语，德语，法语，韩语，芬兰语，犹太语，祖鲁语，南非语，希腊语，
 孟加拉语，加泰罗尼亚语，保加利亚语，库尔德语，葡萄牙语，阿拉伯语
 象形（阿姆哈拉文）
-""")}
+""")
+                        }
+                        else if(ct[1]=="百度翻译"){
+                        reply("""
+#支持的语种（即翻译关键字）：
+ 中文->粤语，粤语->中文（翻译关键字：粤语中文），文言文->中文（翻译关键字：文言文中文），中文->文言文
+ 韩语，葡萄牙语，阿拉伯语，荷兰语，英语，日语，德语，保加利亚语，希腊语
+# 用法：
+ 翻译 [翻译关键字] [需要翻译的内容]
+                        """.trimIndent())}
+                        else if(ct[1]=="翻译"){
+                            reply("请输入\"help 百度翻译\"或\"help 谷歌翻译\"")
+                        }
+                    }
                 }
                 "yxpHelp", "yxp帮助" -> {
                     reply("""
@@ -255,7 +271,10 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
                     command = "python $func ng ${ct[1]}"
                 }
                 "hot","微博热搜","wb","微博" -> {
-                    command = "python $webapi hot"
+                    type=0
+                    "python $webapi hot".execute().waitFor()
+                    val file = File(temp)
+                    reply(file.readText()).recallIn(10000)
                 }
                 "resend" -> {
                     type=0

@@ -8,20 +8,24 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.contact.PermissionDeniedException
 import kotlinx.coroutines.InternalCoroutinesApi
 import net.mamoe.mirai.LowLevelAPI
+import net.mamoe.mirai.contact.Member
+import java.io.BufferedReader
 import java.io.File
+import java.io.InputStream
+import java.io.InputStreamReader
 import java.lang.Exception
 import java.nio.charset.StandardCharsets
 
-val program="\"d:/Program Source/QQBOT/python/webyxp.py\""
-val webapi="\"d:/Program Source/QQBOT/python/webapi.py\""
-val func="\"d:/Program Source/QQBOT/python/func.py\""
-val image="\"d:/Program Source/QQBOT/python/image.py\""
-val temp="D:/Program Source/QQBOT/python/Temp/temp.txt"
-val elog="D:/Program Source/QQBOT/python/Temp/t.log"
-val tempCheck="D:/Program Source/QQBOT/python/Temp/check.txt"
-val imageTemp="D:/Program Source/QQBOT/python/Temp/temp.jpg"
-val imageMath="D:/Program Source/QQBOT/python/Temp/Math.png"
-val imagePrivate="D:/Program Source/QQBOT/python/Temp/FacePrivate.jpg"
+const val program="\"d:/Program Source/QQBOT/python/webyxp.py\""
+const val webapi="\"d:/Program Source/QQBOT/python/webapi.py\""
+const val func="\"d:/Program Source/QQBOT/python/func.py\""
+const val image="\"d:/Program Source/QQBOT/python/image.py\""
+const val temp="D:/Program Source/QQBOT/python/Temp/temp.txt"
+const val elog="D:/Program Source/QQBOT/python/Temp/t.log"
+const val tempCheck="D:/Program Source/QQBOT/python/Temp/check.txt"
+const val imageTemp="D:/Program Source/QQBOT/python/Temp/temp.jpg"
+const val imageMath="D:/Program Source/QQBOT/python/Temp/Math.png"
+const val imagePrivate="D:/Program Source/QQBOT/python/Temp/FacePrivate.jpg"
 
 
 @LowLevelAPI
@@ -36,13 +40,17 @@ suspend fun main() {
     var type=1
     var photopath=""
     var command=""
-    //miraiBot.getGroup(830875502L).sendMessage("机器人 on")
-    miraiBot.subscribeAlways<GroupMessageEvent> { event ->
+    miraiBot.getGroup(830875502L).sendMessage("机器人 on").recallIn(10000)
+    miraiBot.getGroup(830875502L).sendMessage("Debug Note:String.execute().waitForThis().outputStream.ToString()").recallIn(10000)
+    miraiBot.subscribeAlways<MessageEvent> { event ->
         type=1
+
         try{
-            val message = event.message.content
-            if(message.length>=50){
-                check(event)
+           val message = event.message.content
+           check(event)
+           if(message=="机器人 off"){
+                reply(At(event.sender as Member)+" 呜呜呜有人要关我")
+                return@subscribeAlways
             }
             else{
             //event.message[Image]?.queryUrl()
@@ -64,11 +72,7 @@ suspend fun main() {
                     } else{
                         ct[2].toInt()
                     }
-                    command = "python $webapi zyb ${ct[1]} $num"
-                    println(command)
-                    val rt=command.execute()
-                    rt.waitFor()
-                    val msg=File(temp).readText(StandardCharsets.UTF_8).split("{img}")
+                    val msg="python $webapi zyb ${ct[1]} $num".execute().waitForThis().inputStream.readString().split("{img}")
                     buildMessageChain {
                         if(msg.size==1){
                             add(msg[0])
@@ -156,7 +160,6 @@ suspend fun main() {
                         return@subscribeAlways
                     }
                     command = "python $webapi trs ${ct[1]} g ${ct.dropLast(2).joinToString(" ")}"
-                    print(command)
                 }
                 "trs", "翻译", "translate" -> {
                     if(ct.size==1){
@@ -168,13 +171,11 @@ suspend fun main() {
                         return@subscribeAlways
                     }
                     command = "python $webapi trs ${ct[1]} b ${ct.drop(2).joinToString(" ")}"
-                    print(command)
                 }
 
                 "搜索建议", "idea", "search" -> {
                     type=0
-                    "python $webapi search ${ct[1]}".execute().waitFor()
-                    reply(File(temp).readText()).recallIn(10000)
+                    reply("python $webapi search ${ct[1]}".execute().waitForThis().inputStream.readString()).recallIn(60000)
                 }
                 "baidu","百度"->{
                     command = "python $webapi baidu ${ct[1]}"
@@ -218,7 +219,7 @@ eat 文字 ->生成表情包
 日语，英语，德语，法语，韩语，芬兰语，犹太语，祖鲁语，南非语，希腊语，
 孟加拉语，加泰罗尼亚语，保加利亚语，库尔德语，葡萄牙语，阿拉伯语
 象形（阿姆哈拉文）
-""")
+""".trimIndent())
                         }
                         else if(ct[1]=="百度翻译"){
                         reply("""
@@ -252,18 +253,13 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
                 "qrcode", "二维码生成" -> {
                     type=0
                     val qrtext = message.replace("qrcode ", "").replace("二维码生成 ","")
-                    command = "myqr $qrtext -d \"D:/Program Source/QQBOT/python/Temp\""
-                    val rt=command.execute()
-                    rt.waitFor()
+                    "myqr $qrtext -d \"D:/Program Source/QQBOT/python/Temp\"".execute().waitFor()
                     photopath="D:/Program Source/QQBOT/python/Temp/qrcode.png"
                     File(photopath).sendAsImage()
                 }
                 "photo","图片","每日一图"->{
                     type=0
-                    command = "python $webapi photo"
-                    val rt=command.execute()
-                    rt.waitFor()
-                    val f=File(temp).readText().split("|")
+                    val f="python $webapi photo".execute().waitForThis().inputStream.readString().split("|")
                     File(f[0]).sendAsImage()
                     reply(f[1])
                 }
@@ -272,29 +268,9 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
                 }
                 "hot","微博热搜","wb","微博" -> {
                     type=0
-                    "python $webapi hot".execute().waitFor()
+
                     val file = File(temp)
-                    reply(file.readText()).recallIn(10000)
-                }
-                "resend" -> {
-                    type=0
-                    when (ct[1]) {
-                        "text" -> {
-                            try {
-                                val file = File(temp)
-                                reply(file.readText())
-                            } catch (e: Exception) {
-                                reply(e.toString())
-                            }
-                        }
-                        "image" -> {
-                            try {
-                                File(imageTemp).sendAsImageTo(subject)
-                            } catch (e: Exception) {
-                                reply(e.toString())
-                            }
-                        }
-                    }
+                    reply("python $webapi hot".execute().waitForThis().inputStream.readString()).recallIn(30000)
                 }
                 else->{
                     type=100
@@ -304,14 +280,11 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
             println(type)
             when (type){
                 1->{
-                    val rt=command.execute()
-                    rt.waitFor()
-                    reply(File(temp).readText())
+                    reply(command.execute().waitForThis().inputStream.readString())
                     type=0
                 }
                 2->{
-                    val rt=command.execute()
-                    rt.waitFor()
+                    command.execute().waitFor()
                     File(photopath).sendAsImage()
                     type=0
                 }
@@ -325,34 +298,43 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
 
     miraiBot.join() // 等待 机器人 离线, 避免主线程退出
 }
-@LowLevelAPI
-suspend fun check(event: GroupMessageEvent){
-    if(event.sender.id== 2854196310L)return
-    if(event.sender.permission.level==0)return
-    if(event.message.content.contains("aa")){}
-    //val a=event.bot._lowLevelGetGroupHonorListData(event.group.id,type = GroupHonorType.ACTIVE)?.actorList
-    //print(a?.size)
-    //print(a?.get(1)?.name)
 
-    //print(event.bot._lowLevelGetGroupActiveData(event.group.id).info?.joinNum.toString())
-    val process = "python $webapi check \"${event.message.content}\"".execute()
+suspend fun check(event: MessageEvent){
+    if(event.message.content.length<50)return
+    if(event.sender.id== 2854196310L)return
+    if((event.sender as Member).permission.level==0)return
+    if(event.message.content.contains("bilibili.com"))return
+    if(event.message.content.contains("csdn.com"))return
+    val result="python $webapi check \"${event.message.content}\"".execute().waitForThis().inputStream.readString()
     print("python $webapi check \"${event.message.content}\"")
-    process.waitFor()
-    val result = File(tempCheck).readText()
-    if (result == "y") {print("\r\n通过") } else
-    {
-        try {
-            event.sender.kick("Bot测试")
-        } catch (err: PermissionDeniedException) {
-            event.reply(At(event.sender) + "有违禁信息但权限原因无法踢走\n原因：$result")
-        } finally {
-            event.reply(At(event.sender) + "有违禁信息\n原因：$result")
-        }
-        File(elog).writeText(File(elog).readText() + "\n" + event.senderName + " " + event.message.content)
-    }
+    //val result = File(tempCheck).readText()
+    if (result == "y") print("\r\n通过")
+    else checkFailed(event,result)
+    if(event.message.content.contains("感兴趣的可以加一下进去交流学习哦"))checkFailed(event,result)
 }
 
+suspend fun checkFailed(event: MessageEvent,result:String){
+    try {
+        (event.sender as Member).kick("Bot测试")
+    } catch (err: PermissionDeniedException) {
+        event.reply(At(event.sender as Member) + "有违禁信息但权限原因无法踢走\n原因：$result")
+    } finally {
+        event.reply(At(event.sender as Member) + "有违禁信息\n原因：$result")
+    }
+    File(elog).writeText(File(elog).readText() + "\n" + event.senderName + " " + event.message.content)
+}
 fun String.execute(): Process {
     val runtime = Runtime.getRuntime()
     return runtime.exec(this)
+}
+fun Process.waitForThis():Process{
+    this.waitFor()
+    return this
+}
+fun InputStream.readString():String{
+    return BufferedReader(InputStreamReader(this)).useLines { lines ->
+        val results = StringBuilder()
+        lines.forEach { results.append(it) }
+        results.toString()
+    }
 }

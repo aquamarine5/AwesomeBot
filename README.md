@@ -1,7 +1,7 @@
 # ebagqbot
 **阿巴阿巴阿巴巴巴巴**
 
-> ebag yxp代码：webyxp.py  
+> ebag yxp代码：[webyxp.py](https://github.com/awesomehhhhh/EbagUtil)  
 > 网络爬虫 代码：webapi.py  
 > qqbot机器人实现：main.kt  
 

@@ -3,18 +3,12 @@ import net.mamoe.mirai.alsoLogin
 import net.mamoe.mirai.event.*
 import net.mamoe.mirai.join
 import net.mamoe.mirai.message.*
-import net.mamoe.mirai.data.*
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.contact.PermissionDeniedException
 import kotlinx.coroutines.InternalCoroutinesApi
-import net.mamoe.mirai.LowLevelAPI
 import net.mamoe.mirai.contact.Member
-import java.io.BufferedReader
-import java.io.File
-import java.io.InputStream
-import java.io.InputStreamReader
+import java.io.*
 import java.lang.Exception
-import java.nio.charset.StandardCharsets
 
 const val program="\"d:/Program Source/QQBOT/python/webyxp.py\""
 const val webapi="\"d:/Program Source/QQBOT/python/webapi.py\""
@@ -27,8 +21,6 @@ const val imageTemp="D:/Program Source/QQBOT/python/Temp/temp.jpg"
 const val imageMath="D:/Program Source/QQBOT/python/Temp/Math.png"
 const val imagePrivate="D:/Program Source/QQBOT/python/Temp/FacePrivate.jpg"
 
-
-@LowLevelAPI
 @InternalCoroutinesApi
 suspend fun main() {
 
@@ -40,8 +32,8 @@ suspend fun main() {
     var type=1
     var photopath=""
     var command=""
-    miraiBot.getGroup(830875502L).sendMessage("机器人 on").recallIn(10000)
-    miraiBot.getGroup(830875502L).sendMessage("Debug Note:String.execute().waitForThis().outputStream.ToString()").recallIn(10000)
+    //miraiBot.getGroup(830875502L).sendMessage("机器人 on").recallIn(10000)
+    //miraiBot.getGroup(830875502L).sendMessage("Debug Note:String.execute().waitForThis().outputStream.ToString()").recallIn(10000)
     miraiBot.subscribeAlways<MessageEvent> { event ->
         type=1
 
@@ -280,6 +272,7 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
             println(type)
             when (type){
                 1->{
+
                     reply(command.execute().waitForThis().inputStream.readString())
                     type=0
                 }
@@ -332,9 +325,21 @@ fun Process.waitForThis():Process{
     return this
 }
 fun InputStream.readString():String{
-    return BufferedReader(InputStreamReader(this)).useLines { lines ->
-        val results = StringBuilder()
-        lines.forEach { results.append(it) }
-        results.toString()
+    var bos=ByteArrayOutputStream()
+    try{
+        val a=ByteArray(1)
+        var len=0
+        do{
+            len=this.read(a)
+            bos.write(a)
+        }while (-1!=len)
+        return bos.toString("gbk")
+    }
+    catch (e:Exception){
+        e.printStackTrace()
+        return e.toString()
+    }
+    finally {
+        bos.close()
     }
 }

@@ -85,7 +85,6 @@ class webapi():
 #######################################################
             elif arg[1]=="search":#搜索建议
                 urlBd="http://suggestion.baidu.com/su?wd=%s&action=opensearch&ie=UTF-8"%arg[2]
-                print(urlBd)
                 urlBing="http://cn.bing.com/AS/Suggestions?pt=page.home&mkt=zh-cn&ds=mobileweb&qry=%s&cp=2&cvid=86388E638B3C48DBA852C0BF46189C46"%arg[2]
                 urlSg="http://www.sogou.com/suggnew/ajajjson?key=%s&type=web&ori=yes&pr=web"%arg[2]
                 url360="http://sug.so.360.cn/suggest?encodein=utf-8&encodeout=utf-8&format=json&word=%s"%arg[2]
@@ -132,7 +131,6 @@ class webapi():
                 with open(r"D:\Program Source\QQBOT\python\Source\baiduapi.txt") as f:app=eval(f.read())[5]
                 urlNews="http://index.baidu.com/Interface/Newwordgraph/getNews?"\
                     "region=0&startdate=20200101&enddate=%s&wordlist[0]=%s"%(time.strftime("%Y%m%d", time.localtime()),arg[2])
-                print(urlNews)
                 cookir={"BDUSS":app}
                 o=loads(requests.get(urlNews,cookies=cookir).text)
                 o=o["data"][0]["news"]
@@ -144,7 +142,6 @@ class webapi():
 #######################################################
             elif arg[1]=="face":#B站随机头像
                 textWrite=False
-                print(1)
                 if (arg[2]=="bilibili")|(arg[2]=="b"):
                     while True:
                         out=self.face()
@@ -270,7 +267,6 @@ class webapi():
                     text=labelDict[l[0]["label"]]+f"\n{str(l)}"
                 with open(r"D:/Program Source/QQBOT/python/Temp/check.txt","w+",encoding="UTF-8") as f:
                     f.write(text)
-                    print(text)
             if arg[1]=="trs":
                 if (arg[2]=="粤语")|(arg[2]=="文言文")|(arg[2]=="文言文中文")|(arg[2]=="粤语中文")|(arg[3]=="b"):#翻译（百度）
                     app=[]
@@ -341,9 +337,7 @@ class webapi():
 #######################################################
     def face(self):
         r=random.randint(1,666666666)
-        print(r)
         url=f"http://api.bilibili.com/x/space/acc/info?mid={r}"
-        print(url)
         o=loads(requests.get(url).text)["data"]["face"]
         if o=="http://i0.hdslb.com/bfs/face/member/noface.jpg":
             return 1
@@ -354,16 +348,19 @@ class webapi():
 ####################################################### 
 
 if __name__=="__main__":
-    wb=webapi(arg)
+    #wb=webapi(arg)
     try:
-        #wb=webapi(arg)
+        wb=webapi(arg)
         text=wb.text
         textWrite=wb.textWrite
     except BaseException as e:
         text=e
         textWrite=True
-    with open(r"D:\Program Source\QQBOT\python\Temp\temp.txt","w+",encoding="UTF-8") as f:
-        if(textWrite):
-            text=str(text)
-            f.write(text)
-            print(text)
+    if(False):
+        with open(r"D:\Program Source\QQBOT\python\Temp\temp.txt","w+",encoding="UTF-8") as f:
+            if(textWrite):
+                text=str(text)
+                f.write(text)
+                print(text)
+    else:
+        print(text)

@@ -4,6 +4,7 @@
 > ebag yxp代码：[webyxp.py](https://github.com/awesomehhhhh/EbagUtil)  
 > 网络爬虫 代码：webapi.py  
 > qqbot机器人实现：main.kt  
+> qqbot基于：[mirai](https://github.com/mamoe/mirai)
 
 ## （webapi）正在（计划）实现：  
 

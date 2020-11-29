@@ -145,8 +145,9 @@ class webapi():
                 if (arg[2]=="bilibili")|(arg[2]=="b"):
                     while True:
                         out=self.face()
-                        if out==1:pass
+                        if out==None:pass
                         else:break
+                    print(f"success:{out}")
                 elif (arg[2]=="qq")|(arg[2]=="q"):
                     while True:
                         out=self.faceqq()
@@ -253,7 +254,6 @@ class webapi():
 ######################################################
             if arg[1]=="check":
                 s=''.join(arg[2:])
-                
                 textWrite=False
                 url="https://ai.baidu.com/aidemo"
                 head=forBaiduHeader
@@ -262,7 +262,7 @@ class webapi():
                 t=requests.post(url,tex,headers=head).text
                 t=t.encode("utf-8").decode("unicode_escape")
                 l=loads(t)["data"]["result"]["reject"]
-                if(len(l)==0):text="y"
+                if(len(l)==0):text="通过"
                 else:
                     text=labelDict[l[0]["label"]]+f"\n{str(l)}"
                 with open(r"D:/Program Source/QQBOT/python/Temp/check.txt","w+",encoding="UTF-8") as f:
@@ -335,22 +335,24 @@ class webapi():
         self.text=text
         self.textWrite=textWrite
 #######################################################
-    def face(self):
+    def face(self) -> int:
         r=random.randint(1,666666666)
         url=f"http://api.bilibili.com/x/space/acc/info?mid={r}"
-        o=loads(requests.get(url).text)["data"]["face"]
-        if o=="http://i0.hdslb.com/bfs/face/member/noface.jpg":
-            return 1
+        o=loads(requests.get(url).text)
+        if o["code"]==(-404):return None
+        elif o["data"]["face"]=="http://i0.hdslb.com/bfs/face/member/noface.jpg":
+            return None
         else:
-            with open(r"D:\\Program Source\\QQBOT\\python\Temp\face.png","wb+") as f:f.write(requests.get(o).content)
+            with open(r"D:\\Program Source\\QQBOT\\python\Temp\face.png","wb+") as f:f.write(requests.get(o["data"]["face"]).content)
+            return r
     def faceqq(self):
         return 0
 ####################################################### 
 
 if __name__=="__main__":
-    #wb=webapi(arg)
+    wb=webapi(arg)
     try:
-        wb=webapi(arg)
+        #wb=webapi(arg)
         text=wb.text
         textWrite=wb.textWrite
     except BaseException as e:

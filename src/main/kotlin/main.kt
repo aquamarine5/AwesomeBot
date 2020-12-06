@@ -7,8 +7,10 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.contact.PermissionDeniedException
 import kotlinx.coroutines.InternalCoroutinesApi
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.utils.BotConfiguration
 import java.io.*
 import java.lang.Exception
+import java.lang.IndexOutOfBoundsException
 
 const val program="\"d:/Program Source/QQBOT/python/webyxp.py\""
 const val webapi="\"d:/Program Source/QQBOT/python/webapi.py\""
@@ -28,15 +30,18 @@ suspend fun main() {
     val password = File("D:/Program Source/QQBOT/password.txt").readText()//Bot的密码
     val miraiBot = Bot(qqId, password){
         fileBasedDeviceInfo("device.json")
+        protocol=BotConfiguration.MiraiProtocol.ANDROID_PHONE
     }.alsoLogin()
     var type=1
     var photopath=""
     var command=""
+    //miraiBot.getGroup(970111459L).sendMessage("机器人 on")
     //miraiBot.getGroup(830875502L).sendMessage("机器人 on").recallIn(10000)
-    //miraiBot.getGroup(830875502L).sendMessage("Debug Note:String.execute().waitForThis().outputStream.ToString()").recallIn(10000)
+    //miraiBot.getGroup(830875502L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(10000)
+    //miraiBot.getGroup(830875502L).sendMessage("Debug Note:不会踢人了*暂时*").recallIn(10000)
     miraiBot.subscribeAlways<MessageEvent> { event ->
         type=1
-
+        print(event.message[Image]?.queryUrl()+"\n")
         try{
            val message = event.message.content
            check(event)
@@ -45,7 +50,7 @@ suspend fun main() {
                 return@subscribeAlways
             }
             else{
-            //event.message[Image]?.queryUrl()
+            event.message[Image]?.queryUrl()
             val ct = message.split(" ")
             when (ct[0]) {
                 "yxpLt", "yxp老师评语" -> {
@@ -53,6 +58,7 @@ suspend fun main() {
                 }
                 "数学题", "math" -> {
                     type=2
+
                     command = "python $webapi math"
                     photopath=imageMath
                 }
@@ -180,9 +186,10 @@ suspend fun main() {
                     command = "python $webapi news ${ct[1]}"
                 }
                 "face","头像"->{
-                    type=2
-                    command = "python $webapi face b"
-                    photopath="D:\\Program Source\\QQBOT\\python\\Temp\\face.png"
+                    type=0
+                    val result="python $webapi face b".execute().waitForThis().inputStream.readString()
+                    print("D:\\Program Source\\QQBOT\\python\\Temp\\Face\\${result.trim().toInt()}.jpg\n")
+                    File("D:\\Program Source\\QQBOT\\python\\Temp\\Face\\${result.trim().toInt()}.jpg").sendAsImage()
                 }
                 "help", "帮助" -> {
                     type=0
@@ -221,6 +228,15 @@ eat 文字 ->生成表情包
 # 用法：
  翻译 [翻译关键字] [需要翻译的内容]
                         """.trimIndent())}
+                        else if(ct[1]=="图片"){
+                            reply("""
+# 用法： 图片 [参数]
+目前参数只能为数字（1-9）
+不传参则随机
+3是宠物，5是明星
+其他暂时未知
+                            """.trimIndent())
+                        }
                         else if(ct[1]=="翻译"){
                             reply("请输入\"help 百度翻译\"或\"help 谷歌翻译\"")
                         }
@@ -251,28 +267,45 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
                 }
                 "photo","图片","每日一图"->{
                     type=0
-                    val f="python $webapi photo".execute().waitForThis().inputStream.readString().split("|")
-                    File(f[0]).sendAsImage()
-                    reply(f[1])
+                    val index:Int = if(ct.size==1) -1;
+                    else if(ct[1].length>=2){
+                        reply("数字过大，仅支持1-9（包括1-9）")
+                        print(3)
+                        return@subscribeAlways
+                    } else {
+                        try{
+                            ct[1].toInt()
+                        }catch (e:Exception){
+                            reply("参数不是数字")
+                            return@subscribeAlways
+                        }
+                    }
+                    print(1)
+                    val f="python $webapi photo $index".execute().waitForThis().inputStream.readString().split("|")
+                    print("python $webapi photo $index")
+                    print(f)
+                    try{
+                        reply(f[1].replace("_", "\n"))
+                        File(f[0]).sendAsImage()
+                    }
+                    catch(e:IndexOutOfBoundsException){
+                        reply("你真倒霉")
+                    }
                 }
                 "性别判断", "ng", "Sex" -> {
                     command = "python $func ng ${ct[1]}"
                 }
                 "hot","微博热搜","wb","微博" -> {
                     type=0
-
                     val file = File(temp)
                     reply("python $webapi hot".execute().waitForThis().inputStream.readString()).recallIn(30000)
                 }
                 else->{
                     type=100
-                    println(666)
                 }
             }
-            println(type)
             when (type){
                 1->{
-
                     reply(command.execute().waitForThis().inputStream.readString())
                     type=0
                 }
@@ -294,21 +327,25 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
 
 suspend fun check(event: MessageEvent){
     if(event.message.content.length<50)return
+    if(event.message.content.contains("<?xml version='1.0' encoding='UTF-8' standalone='yes'?>"))return
     if(event.sender.id== 2854196310L)return
-    if((event.sender as Member).permission.level==0)return
+    if((event.sender as Member).permission.level==1)return
     if(event.message.content.contains("bilibili.com"))return
+    if(event.message.content.contains("docs.microsoft.com"))return
+    if(event.message.content.contains("unity.cn"))return
+    if(event.message.content.contains("unity.com"))return
     if(event.message.content.contains("csdn.com"))return
+    if(event.message.content.contains("github.com"))return
     val result="python $webapi check \"${event.message.content}\"".execute().waitForThis().inputStream.readString()
-    print("python $webapi check \"${event.message.content}\"")
-    //val result = File(tempCheck).readText()
-    if (result == "y") print("\r\n通过")
+    println(result)
+    if(event.message.content.contains("感兴趣的可以加一下进去交流学习哦")) checkFailed(event,result)
+    if (result.contains("通过")) print(result)
     else checkFailed(event,result)
-    if(event.message.content.contains("感兴趣的可以加一下进去交流学习哦"))checkFailed(event,result)
 }
 
 suspend fun checkFailed(event: MessageEvent,result:String){
     try {
-        (event.sender as Member).kick("Bot测试")
+        //(event.sender as Member).kick("Bot测试")
     } catch (err: PermissionDeniedException) {
         event.reply(At(event.sender as Member) + "有违禁信息但权限原因无法踢走\n原因：$result")
     } finally {
@@ -325,15 +362,15 @@ fun Process.waitForThis():Process{
     return this
 }
 fun InputStream.readString():String{
-    var bos=ByteArrayOutputStream()
+    val bos=ByteArrayOutputStream()
     try{
         val a=ByteArray(1)
-        var len=0
+        var len: Int
         do{
             len=this.read(a)
             bos.write(a)
         }while (-1!=len)
-        return bos.toString("gbk")
+        return bos.toString("gbk").dropLast(1)
     }
     catch (e:Exception){
         e.printStackTrace()

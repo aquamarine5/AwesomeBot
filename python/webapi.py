@@ -15,6 +15,14 @@ class webapi():
     def __init__(self,arg):
         textWrite=True
         text=""
+        imageDict={
+            "":1,
+            "?":2,
+            "宠物":3,
+            "狗":3,
+            "猫":3,
+            "明星":5
+        }
         labelDict={
             1:"暴恐违禁",
             2:"文本色情",
@@ -83,6 +91,55 @@ class webapi():
                     out=outr["result"]["addressComponent"]
                     text="位置： "+out["country"]+"  "+out["province"]+"  "+out["city"]+" "+out["district"]+"\n"+"地址： "+outr["result"]["formatted_address"]
 #######################################################
+            elif arg[1]=="photo":#每日一图
+                url="http://imagzine.oppomobile.com/api/slide_image/channel_image_list"
+                lists=[b"\x08\x01\x10\x01",b"\x08\x02\x10\x01",b"\x08\x03\x10\x01",
+                      b"\x08\x04\x10\x01",b"\x08\x05\x10\x01",b"\x08\x06\x10\x01",
+                      b"\x08\x07\x10\x01",b"\x08\x08\x10\x01",b"\x08\x09\x10\x01"]
+                if arg[2]=="-1": pst=random.choice(lists)
+                else:
+                    try:
+                        if(len(arg[2])==1):pst=lists[int(arg[2])]
+                        else:
+                            if arg[2] in imageDict:pst=lists[imageDict[arg[2]]]
+                            else:
+                                self.text="参数不对，目前仅支持 ** 数字 **"
+                                self.textWrite=True
+                                return
+                    except ValueError:
+                        self.text="参数必须是数字"
+                        self.textWrite=True
+                        return
+                    except IndexError:
+                        self.text="数字必须在1-9（包括1,9）以内"
+                        self.textWrite=True
+                        return
+                data=requests.post(url,pst).text
+                dt=data.split("android.intent.action.VIEW")
+                rd=random.randint(0,len(dt)-1)
+                #print(dt[rd])
+                dt=dt[rd].split("@")
+                if(len(dt)==2):
+                    dt=dt[1][3:].split("Z�")
+                else:
+                    self.text="你真倒霉，服务器发来了一些我看不懂的东西"
+                    self.textWrite=True
+                    return
+                text=dt[0].split("R")
+                try:
+                    text=text[0]+"\n"+text[1][1:]
+                except IndexError:
+                    self.text="你真倒霉，服务器发来了一些我看不懂的东西"
+                    self.textWrite=True
+                    return
+                img=("http"+(dt[1][1:].split("zbhttp")[1])).split(".jpg")[0]+".jpg"
+                ps="D:\\Program Source\\QQBOT\\python\\Temp\\Photo\\%s.png"%text.replace("\n","_").replace("，",",").replace("。",".").replace("！","!").replace("？","")
+                if not (os.path.exists(ps)):
+                    image=requests.get(img)
+                    with open(ps,"wb+") as f:
+                        f.write(image.content)
+                text=ps+"|"+text
+#######################################################
             elif arg[1]=="search":#搜索建议
                 urlBd="http://suggestion.baidu.com/su?wd=%s&action=opensearch&ie=UTF-8"%arg[2]
                 urlBing="http://cn.bing.com/AS/Suggestions?pt=page.home&mkt=zh-cn&ds=mobileweb&qry=%s&cp=2&cvid=86388E638B3C48DBA852C0BF46189C46"%arg[2]
@@ -147,7 +204,8 @@ class webapi():
                         out=self.face()
                         if out==None:pass
                         else:break
-                    print(f"success:{out}")
+                    #print("D:\\0.png")
+                    print(out)
                 elif (arg[2]=="qq")|(arg[2]=="q"):
                     while True:
                         out=self.faceqq()
@@ -204,38 +262,6 @@ class webapi():
                 url="http://e.anoah.com/api/?q=json/ebag/ValidateCode/getImageCode&info={\"uid\":\"114514\"}"
                 with open(r"D:\Program Source\QQBOT\python\Temp\Math.png","wb+") as f:f.write(requests.get(url).content)
 #######################################################
-            elif arg[1]=="photo":#每日一图
-                url="http://imagzine.oppomobile.com/api/slide_image/channel_image_list"
-                pst=random.choice(
-                    [b"\x08\x01\x10\x01",b"\x08\x03\x10\x01",b"\x08\x08\x10\x01",
-                     b"\x08\x09\x10\x01",b"\x08\x02\x10\x01",b"\x08\x07\x10\x01",
-                     b"\x08\x06\x10\x01"])
-                data=requests.post(url,pst,timeout=(0.5,0.5)).text
-                dt=data.split("android.intent.action.VIEW")
-                rd=random.randint(0,len(dt)-1)
-                try:
-                    dt=dt[rd].split("\x10@")[1][3:].split("Z�")
-                except:
-                    try:
-                        dt=dt[rd].split("\x11@")[1][3:].split("Z�")
-                    except:
-                        try:
-                            dt=dt[rd].split("\x12@")[1][3:].split("Z�")
-                        except:
-                            try:
-                                dt=dt[rd].split("\x13@")[1][3:].split("Z�")
-                            except:
-                                dt=dt[rd].split("\x14@")[1][3:].split("Z�")
-                text=dt[0].split("R")
-                text=text[0]+"\n"+text[1][1:]
-                img=("http"+(dt[1][1:].split("zbhttp")[1])).split(".jpg")[0]+".jpg"
-                ps="D:\\Program Source\\QQBOT\\python\\Temp\\Photo\\%s.png"%text.replace("\n"," ").replace("，"," ").replace("。"," ").replace("！"," ")
-                if not (os.path.exists(ps)):
-                    image=requests.get(img)
-                    with open(ps,"wb+") as f:
-                        f.write(image.content)
-                text=ps+"|"+text
-#######################################################
             elif arg[1]=="hot":#微博热搜
                 url="http://api.weibo.cn/2/guest/page?"\
                     "from=1781065010&c=wbfastapp&lang=zh_CN&count=20&containerid=106003type%3D25%26t%3D3%26"\
@@ -275,17 +301,18 @@ class webapi():
                     secretKey = app[4]
                     fromLang = 'auto'
                     info=" ".join(arg[4:])
-                    if(arg[2] not in trsBaiduDict):
-                        self.text="错误的语言"
-                        self.textWrite=True
-                        return
-                    toLang=trsBaiduDict[arg[2]]
                     if(arg[2]=="文言文中文"):
                         fromLang="wyw"
                         toLang="zh"
                     elif (arg[2]=="粤语中文"):
                         fromLang="yue"
                         toLang="zh"
+                    else:
+                        if (arg[2] not in trsBaiduDict):
+                            self.text="错误的语言，尝试 help 百度翻译"
+                            self.textWrite=True
+                            return
+                    toLang=trsBaiduDict[arg[2]]
                     salt = random.randint(32768, 65536)
                     sign = appid + str(info) + str(salt) + secretKey
                     sign = hashlib.md5(sign.encode()).hexdigest()
@@ -343,7 +370,7 @@ class webapi():
         elif o["data"]["face"]=="http://i0.hdslb.com/bfs/face/member/noface.jpg":
             return None
         else:
-            with open(r"D:\\Program Source\\QQBOT\\python\Temp\face.png","wb+") as f:f.write(requests.get(o["data"]["face"]).content)
+            with open(f"D:\\Program Source\\QQBOT\\python\\Temp\\Face\\{r}.jpg","wb+") as f:f.write(requests.get(o["data"]["face"]).content)
             return r
     def faceqq(self):
         return 0

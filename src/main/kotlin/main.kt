@@ -7,6 +7,8 @@ import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.contact.PermissionDeniedException
 import kotlinx.coroutines.InternalCoroutinesApi
 import net.mamoe.mirai.contact.Member
+import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
+import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.utils.BotConfiguration
 import java.io.*
 import java.lang.Exception
@@ -35,10 +37,18 @@ suspend fun main() {
     var type=1
     var photopath=""
     var command=""
-    //miraiBot.getGroup(970111459L).sendMessage("机器人 on")
-    //miraiBot.getGroup(830875502L).sendMessage("机器人 on").recallIn(10000)
-    //miraiBot.getGroup(830875502L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(10000)
-    //miraiBot.getGroup(830875502L).sendMessage("Debug Note:不会踢人了*暂时*").recallIn(10000)
+    miraiBot.getGroup(1074494974L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
+    miraiBot.getGroup(830875502L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
+    miraiBot.getGroup(1074494974L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
+    miraiBot.getGroup(830875502L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
+    miraiBot.getGroup(1019390914L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
+    miraiBot.getGroup(1019390914L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
+    miraiBot.subscribeAlways<BotInvitedJoinGroupRequestEvent> {event->
+        event.accept()
+    }
+    miraiBot.subscribeAlways<NewFriendRequestEvent> {event->
+        event.accept()
+    }
     miraiBot.subscribeAlways<MessageEvent> { event ->
         type=1
         print(event.message[Image]?.queryUrl()+"\n")
@@ -50,55 +60,13 @@ suspend fun main() {
                 return@subscribeAlways
             }
             else{
-            event.message[Image]?.queryUrl()
             val ct = message.split(" ")
             when (ct[0]) {
-                "yxpLt", "yxp老师评语" -> {
-                    command = "python $program yxpLt ${ct[1]}"
-                }
-                "数学题", "math" -> {
-                    type=2
-
-                    command = "python $webapi math"
-                    photopath=imageMath
-                }
-                "zyb","作业帮","作业"->{
-                    type=0
-                    var num=-1
-                    num = if (ct.size==2){
-                        0
-                    } else{
-                        ct[2].toInt()
-                    }
-                    val msg="python $webapi zyb ${ct[1]} $num".execute().waitForThis().inputStream.readString().split("{img}")
-                    buildMessageChain {
-                        if(msg.size==1){
-                            add(msg[0])
-                        }
-                        else{
-                        for ((index,m) in msg.withIndex())
-                            {
-                                add(m)
-                                if(msg.size!=(index+1)){
-                                    add(uploadImage(File("D:\\Program Source\\QQBOT\\python\\Temp\\Study\\$index.jpg")))
-                                }
-
-                            }
-                        }
-                    }.send()
-                }
-                "yxpInfo", "yxp信息" -> {
-                    command = "python $program yxpInfo ${ct[1]}"
-                }
-                "yxpNm", "yxp积分" -> {
-                    command = "python $program yxpNm ${ct[1]}"
-                }
-                "yxpPRs", "yxpPrs", "yxp批改成绩", "yxpRs" -> {
-                    command = "python $program yxpRs ${ct[1]} ${ct[2]}"
-                }
-                "yxpAs", "yxp答案" -> {
-                    command = "python $program yxpAs ${ct[1]} ${ct[2]}${ct[3]}"
-                }
+                "yxpLt", "yxp老师评语" -> command = "python $program yxpLt ${ct[1]}"
+                "yxpInfo", "yxp信息" ->  command = "python $program yxpInfo ${ct[1]}"
+                "yxpNm", "yxp积分" -> command = "python $program yxpNm ${ct[1]}"
+                "yxpPRs", "yxpPrs", "yxp批改成绩", "yxpRs" -> command = "python $program yxpRs ${ct[1]} ${ct[2]}"
+                "yxpAs", "yxp答案" -> command = "python $program yxpAs ${ct[1]} ${ct[2]}${ct[3]}"
                 "yxpPic", "yxppic", "yxp照片" -> {
                     type=0
                     command = "python $program yxpPic ${ct[1]}"
@@ -131,13 +99,40 @@ suspend fun main() {
                         reply("给的东西不够或者多了，例子：yxp作业 1585745 生物")
                     }
                 }
-                "yxprd", "yxp随机", "yxpRand", "yxp随机作业" -> {
-                    command = "python $program yxpDCom ${ct[1]}"
-                }
+                "yxprd", "yxp随机", "yxpRand", "yxp随机作业" -> command = "python $program yxpDCom ${ct[1]}"
                 "eat" -> {
                     type=2
                     command = "python $image yz ${ct[1]}"
                     photopath=imageTemp
+                }
+                "数学题", "math" -> {
+                    type=2
+
+                    command = "python $webapi math"
+                    photopath=imageMath
+                }
+                "zyb","作业帮","作业"-> {
+                    type = 0
+                    var num = -1
+                    num = if (ct.size == 2) {
+                        0
+                    } else {
+                        ct[2].toInt()
+                    }
+                    val msg = "python $webapi zyb ${ct[1]} $num".execute().waitForThis().inputStream.readString().split("{img}")
+                    buildMessageChain {
+                        if (msg.size == 1) {
+                            add(msg[0])
+                        } else {
+                            for ((index, m) in msg.withIndex()) {
+                                add(m)
+                                if (msg.size != (index + 1)) {
+                                    add(uploadImage(File("D:\\Program Source\\QQBOT\\python\\Temp\\Study\\$index.jpg")))
+                                }
+
+                            }
+                        }
+                    }.send()
                 }
                 "trsWd", "翻译单词", "trswd" -> {
                     var engine = ""
@@ -175,21 +170,20 @@ suspend fun main() {
                     type=0
                     reply("python $webapi search ${ct[1]}".execute().waitForThis().inputStream.readString()).recallIn(60000)
                 }
-                "baidu","百度"->{
-                    command = "python $webapi baidu ${ct[1]}"
-                }
-                "hotword","热词"->{
-                    command = "python $webapi hotword"
-                }
-                "在？"->{reply("在")}
-                "news","新闻"->{
-                    command = "python $webapi news ${ct[1]}"
-                }
+                "baidu","百度"->command = "python $webapi baidu ${ct[1]}"
+                "hotword","热词"->command = "python $webapi hotword"
+                "在？"->reply("在")
+                "news","新闻"->command = "python $webapi news ${ct[1]}"
                 "face","头像"->{
                     type=0
                     val result="python $webapi face b".execute().waitForThis().inputStream.readString()
                     print("D:\\Program Source\\QQBOT\\python\\Temp\\Face\\${result.trim().toInt()}.jpg\n")
-                    File("D:\\Program Source\\QQBOT\\python\\Temp\\Face\\${result.trim().toInt()}.jpg").sendAsImage()
+                    try{
+                        File("D:\\Program Source\\QQBOT\\python\\Temp\\Face\\${result.trim().toInt()}.jpg").sendAsImage()
+                    }
+                    catch(e:IllegalStateException){
+                        reply("图片发送失败，原因：网速过慢\n你可以资助我来使网速更快：")
+                    }
                 }
                 "help", "帮助" -> {
                     type=0
@@ -252,12 +246,8 @@ yxp信息 uid ->返回uid对应信息
 yxp积分 uid ->返回uid对应积分
 yxp老师评语 uid ->返回uid作业评语""".trimIndent())
                 }
-                "ip" -> {
-                    command = "python $webapi ip ${ct[1]}"
-                }
-                "pos" -> {
-                    command = "python $webapi pos ${ct[1]}"
-                }
+                "ip" -> command = "python $webapi ip ${ct[1]}"
+                "pos" -> command = "python $webapi pos ${ct[1]}"
                 "qrcode", "二维码生成" -> {
                     type=0
                     val qrtext = message.replace("qrcode ", "").replace("二维码生成 ","")
@@ -280,10 +270,7 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
                             return@subscribeAlways
                         }
                     }
-                    print(1)
                     val f="python $webapi photo $index".execute().waitForThis().inputStream.readString().split("|")
-                    print("python $webapi photo $index")
-                    print(f)
                     try{
                         reply(f[1].replace("_", "\n"))
                         File(f[0]).sendAsImage()
@@ -292,12 +279,9 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent())
                         reply("你真倒霉")
                     }
                 }
-                "性别判断", "ng", "Sex" -> {
-                    command = "python $func ng ${ct[1]}"
-                }
+                "性别判断", "ng", "Sex" -> command = "python $func ng ${ct[1]}"
                 "hot","微博热搜","wb","微博" -> {
                     type=0
-                    val file = File(temp)
                     reply("python $webapi hot".execute().waitForThis().inputStream.readString()).recallIn(30000)
                 }
                 else->{

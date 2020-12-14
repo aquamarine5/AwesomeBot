@@ -51,6 +51,7 @@ suspend fun main() {
     miraiBot.subscribeAlways<MessageEvent> { event ->
         type=1
         print(event.message[Image]?.queryUrl()+"\n")
+        if((event.sender as Member).group.id==859089296L)return@subscribeAlways
         try{
            val message = event.message.content
            if(!check(event))return@subscribeAlways
@@ -66,16 +67,19 @@ suspend fun main() {
                 "yxpNm", "yxp积分" -> command = "python $program yxpNm ${ct[1]}"
                 "yxpPRs", "yxpPrs", "yxp批改成绩", "yxpRs" -> command = "python $program yxpRs ${ct[1]} ${ct[2]}"
                 "yxpAs", "yxp答案" -> command = "python $program yxpAs ${ct[1]} ${ct[2]}${ct[3]}"
+                "给张泉铭一个相遇之缘" -> {
+                    type=0
+                    reply("爬") }
                 "yxpPic", "yxppic", "yxp照片" -> {
                     type=0
                     "python $program yxpPic ${ct[1]}".execute().waitFor()
-                    val file = File(temp)
-                    if (file.readText() == "") {
+                    val file = File(temp).readText()
+                    if (file == "") {
                         reply("用户不存在")
                         println("ct[0]")
                     } else {
                         buildMessageChain {
-                            add("这是 优学派用户 e${ct[1].toInt()}（${file.readText()}） 的头像\n")
+                            add("这是 优学派用户 e${ct[1].toInt()}（$file） 的头像\n")
                             add(uploadImage(File(imagePrivate)))
                         }.send()
                     }

@@ -6,10 +6,10 @@ name: Python package
 on:
   push:
     branches: [ master ]
-    paths: python/**
+    paths:  [python/**,.github/workflows/python-package.yml]
   pull_request:
     branches: [ master ]
-    paths: python/**
+    paths:  [python/**,.github/workflows/python-package.yml]
 
 jobs:
   build:

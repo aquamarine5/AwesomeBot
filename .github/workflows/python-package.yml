@@ -43,10 +43,13 @@ jobs:
         python -m pip install googletrans
     - name: Test with pytest for webapi.py
       run: |
-        pytest python/webapi.py
+        python python/webapi.py
+#        pytest python/webapi.py
     - name: Test with pytest for webyxp.py
       run: |
-        pytest python/webyxp.py
+        python python/webyxp.py
+#        pytest python/webyxp.py
     - name: Test with pytest for image.py
       run: |
-        pytest python/image.py
+        python python/image.py
+#        pytest python/image.py

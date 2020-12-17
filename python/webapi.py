@@ -332,11 +332,11 @@ class webapi():
                 tex = f"content={urllib.parse.quote(s)}&type=textcensor&apiType=censor&requestTime=1606136419887&token=3466a61eb8"
                 t = requests.post(url, tex, headers=head).text
                 t = t.encode("utf-8").decode("unicode_escape")
-                l = loads(t)["data"]["result"]["reject"]
+                stri = loads(t)["data"]["result"]["reject"]
                 if(len(l) == 0):
                     text = "通过"
                 else:
-                    text = labelDict[l[0]["label"]]+"\n"+str(l)
+                    text = labelDict[l[0]["label"]]+"\n"+str(stri)
                 with open(r"D:/Program Source/QQBOT/python/Temp/check.txt", "w+", encoding="UTF-8") as f:
                     f.write(text)
             if arg[1] == "trs":

@@ -99,7 +99,7 @@ class webyxp():  # 优 学 派 爬 虫#
                     else:
                         for j in range(len(Bk)):
                             text = text+"- "+Bk[j]["name"]+"\n"
-                            if not Bk[j]["cover_photo"] == None:
+                            if not Bk[j]["cover_photo"] is None:
                                 if not HaveP:
                                     with open("python\\Temp\\Image\\%s.jpg" % subjectlistNum[i], "wb+") as f:
                                         f.write(requests.get(
@@ -117,7 +117,7 @@ class webyxp():  # 优 学 派 爬 虫#
                     outF = loads(requests.get(urlClassF).text)["recordset"]
                     outFL = outF["lists"]
                     for i in range(outF["total_count"]):
-                        if not outFL[i]["comment"] == None:
+                        if not outFL[i]["comment"] is None:
                             textHave = textHave+1
                             commentText = outFL[i]["comment"]["text"].replace(
                                 "&nbsp;", "")
@@ -427,7 +427,7 @@ class webyxp():  # 优 学 派 爬 虫#
                                     try:
                                         textP = yxpToText(
                                             items["items"][j]["prompt"])
-                                    except:
+                                    except (KeyError,IndexError):
                                         textP = ""
                                     if isinstance(items["items"][j]["answer"], str):
                                         answer = yxpToText(

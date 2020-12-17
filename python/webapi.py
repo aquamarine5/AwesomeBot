@@ -1,471 +1,590 @@
-import sys
 import requests
+import sys
 from json import loads
-from googletrans import Translator
-from googletrans.constants import (LANGUAGES)
-from bs4 import BeautifulSoup
-import random
-import os
-import re
-import urllib
-import time
-import hashlib
-arg = sys.argv
+
+is_pydroid = False
+if(is_pydroid):
+    argM = "python yxpRs 1585738 最新".split(" ")
+else:
+    argM = sys.argv
 
 
-class webapi():
+def yxpTimeGet():
+    urlT = "http://e.anoah.com/api_dist/?q=json/ebag/System/getServerTime&info={}"
+    return loads(requests.get(urlT).text)["recordset"]["system_time"]
+
+
+def yxpName(uid):
+    urlN = "http://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s" % (
+        uid, str(yxpTimeGet()))
+    return loads(requests.get(urlN).text)["recordset"]["real_name"]
+
+
+def yxpClassId(uid):
+    urlClass = "http://e.anoah.com/api/?q=json/ebag5/User/getUserClasses&info={\"userid\":%s}&pmatsemit=%s" % (
+        uid, yxpTimeGet())
+    Class = loads(requests.get(urlClass).text)["recordset"]
+    ClassScore = ""
+    for t in range(len(Class)):
+        if t == 0:
+            ClassScore = Class[t]["class_id"]
+        else:
+            ClassScore = str(ClassScore)+","+str(Class[t]["class_id"])
+    return ClassScore
+
+
+def yxpToText(inp):
+    inp = inp.replace("<p>", "")
+    inp = inp.replace(r"</p>", "")
+    inp = inp.replace("<span class=\"spot\">", "")
+    inp = inp.replace("<span style=\"font-weight:bold\">", "")
+    inp = inp.replace("<span style=\"color:blue\">", "")
+    inp = inp.replace(r"</span>", "")
+    inp = inp.replace("&nbsp;", "")
+    inp = inp.replace("<pos>", "")
+    inp = inp.replace(r"</pos>", "")
+    inp = inp.replace(r"<br  />", "")
+    inp = inp.replace(r"<br />", "")
+    inp = inp.replace('<p align=\"center\">', "")
+    inp = inp.replace("<img", "`")
+    inp = inp.replace(">", "~")
+    s = inp.find("`")
+    e = inp.find("~")
+    if s == -1:
+        inp = inp[:s]+inp[e+1:]
+    return inp
+#######################################################
+
+
+class webyxp():  # 优 学 派 爬 虫#
     def __init__(self, arg):
-        textWrite = True
-        text = ""
-        imageDict = {
-            "": 1,
-            "?": 2,
-            "宠物": 3,
-            "狗": 3,
-            "猫": 3,
-            "明星": 5
-        }
-        labelDict = {
-            1: "暴恐违禁",
-            2: "文本色情",
-            3: "政治敏感",
-            4: "恶意推广",
-            5: "低俗辱骂",
-            6: "低俗灌水"
-        }
-        trsBaiduDict = {
-            "韩语": "kor",
-            "韩国": "kor",
-            "葡萄牙语": "pt",
-            "葡萄牙": "pt",
-            "希腊语": "el",
-            "希腊": "el",
-            "保加利亚语": "bul",
-            "保加利亚": "bul",
-            "文言文": "wyw",
-            "粤语": "yue",
-            "阿拉伯语": "ara",
-            "阿拉伯": "ara",
-            "德语": "de",
-            "荷兰语": "nl",
-            "荷兰": "nl",
-            "英语": "en",
-            "English": "en",
-            "英文": "en",
-            "日语": "jp",
-            "日本": "jp",
-            "俄语": "ru",
-            "波兰语": "pl",
-            "中文": "zh"
-        }
-        forBaiduHeader = {
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Referer": "https://ai.baidu.com/tech/imagerecognition/general",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/86.0.4240.198 Safari/537.36 Edg/86.0.622.69",
-            "Origin": "https://ai.baidu.com",
-            "Cookie": "BAIDUID=1313CB7CF24038805C23D34EDFF25C8A:SL=0:NR=10:FG=1; BIDUPSID=FEC6A91EA1B1B4707809110B7D14EC1C; PSTM=1568465428; BDUSS=R6OG1LZUR4Ri10QzhGNzJVYk1oWFZZU2pjRWIwNHhOSUpPbDUzeEphc29sbVJmRVFBQUFBJCQAAAAAAAAAAAEAAADE8KcAandzaGkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACgJPV8oCT1fRF; BDUSS_BFESS=R6OG1LZUR4Ri10QzhGNzJVYk1oWFZZU2pjRWIwNHhOSUpPbDUzeEphc29sbVJmRVFBQUFBJCQAAAAAAAAAAAEAAADE8KcAandzaGkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACgJPV8oCT1fRF; H_WISE_SIDS=154770_156537_159234_158935_149355_158405_156816_156289_150776_148867_156096_154605_153628_158926_154173_150772_151018_157261_127969_154413_154175_152982_158528_154013_155803_146732_159014_131423_157699_128701_132550_159288_159450_107313_158055_158830_154189_158519_155344_155255_158022_157171_157790_144966_154619_157814_158718_158610_157188_157965_147551_159050_158367_158910_156710_157696_154639_159157_159092_154362_159074_110085_157006; __yjsv5_shitong=1.0_7_009f894a4cd625acd6f95ba620d853e7fa1f_300_1605529444716_101.20.43.54_9d31cd61; BDRCVFR[mkUqnUt8juD]=mk3SLVN4HKm; H_PS_PSSID=32820_1447_33102_33058_31253_32970_33098_33100_32961_32845; delPer=0; PSINO=1; BDORZ=B490B5EBF6F3CD402E515D22BCDA1598; Hm_lvt_8b973192450250dd85b9011320b455ba=1605529451,1605617148; BA_HECTOR=0l0la08ga1ah8088sa1fr7hg40p; Hm_lpvt_8b973192450250dd85b9011320b455ba=1605617728"
-        }
-        headersParameters = {
-            'Connection': 'Keep-Alive',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-            'Accept-Language': 'en-US,en;q=0.8,zh-Hans-CN;q=0.5,zh-Hans;q=0.3',
-            'Accept-Encoding': 'gzip, deflate',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36 Edg/84.0.522.63'}
+        subjectList = {"语文": 1, "数学": 2, "英语": 3, "化学": 4, "历史": 5, "地理": 6,
+                       "生物": 7, "物理": 8, "美术": 32, "信息": 33, "音乐": 14, "体育": 23, "道法": 437}
+        subjectNmList = {"1": "语文", "2": "数学", "3": "英语", "4": "化学", "5": "历史", "6": "地理",
+                         "7": "生物", "8": "物理", "32": "美术", "33": "信息", "14": "音乐", "23": "体育", "437": "道法"}
+        subjectlistNum = [1, 2, 3, 4, 5, 6, 7, 8, 437, 32, 33, 14, 23]
+        subjectNamelist = ["语文", "数学", "英语", "化学（测试性功能）",
+                           '历史', '地理', '生物', '物理', '道法', '美术', '信息', '音乐', '体育']
+#######################################################
         if len(arg) == 3:
-            if arg[1] == "ip":  # 根据ip看地址
-                url = "https://whois.pconline.com.cn/ip.jsp?ip="+arg[2]
-                text = requests.get(url)
-                text = text.text
-                text = text.replace("\r\n", "")
-                text = text.replace("\n", "")
-                text = text.replace(" ", "")
-#######################################################
-            elif arg[1] == "pos":  # 根据坐标看地址
-                position = arg[2].replace("，", ",")
-                url = "http://api.map.baidu.com/reverse_geocoding/v3/?ak=2qsQNbDMv4WTULwApsVu8IGl7hEr3p3W&output=json&coordtype=wgs84ll&location="+position
-                otext = requests.get(url)
-                outr = loads(otext.text)
-                if not outr["status"] == 0:
-                    text = outr["message"]
-                elif outr["result"]["addressComponent"]["country_code"] == -1:
-                    text = "暂不支持查找此地，例子：\n pos 39.983424,116.3229"
+            if arg[1] == "yxpDCom":  # 个人测试
+                url = "http://e.anoah.com/api_cache/?q=json/icom/Dcom/getDCom&info={\"dcom_id\":%s}" % arg[2]
+                out = loads(requests.get(url).text)
+                if "status" in out:
+                    text = "指定的作业不存在"
                 else:
-                    out = outr["result"]["addressComponent"]
-                    text = "位置： "+out["country"]+"  "+out["province"]+"  "+out["city"] + \
-                        " "+out["district"]+"\n"+"地址： " + \
-                        outr["result"]["formatted_address"]
+                    text = "优学派作业ID：%s\n创建时间：%s\n作业名称：%s\n作业标题：%s\n活动名称：%s\n描述：%s" %\
+                        (out["id"], out["create_time"], out["dcom_name"],
+                         out["dcom_title"], out["activity_name"], out["description"])
 #######################################################
-            elif arg[1] == "photo":  # 每日一图
-                url = "http://imagzine.oppomobile.com/api/slide_image/channel_image_list"
-                lists = [b"\x08\x01\x10\x01", b"\x08\x02\x10\x01", b"\x08\x03\x10\x01",
-                         b"\x08\x04\x10\x01", b"\x08\x05\x10\x01", b"\x08\x06\x10\x01",
-                         b"\x08\x07\x10\x01", b"\x08\x08\x10\x01", b"\x08\x09\x10\x01"]
-                if arg[2] == "-1":
-                    pst = random.choice(lists)
+            elif arg[1] == "yxpBk":  # 返回使用的课本
+                urlClass = "http://e.anoah.com/api/?q=json/ebag5/User/getUserClasses&info="\
+                    "{\"userid\":%s}&pmatsemit=%s" % (arg[2], yxpTimeGet())
+                Cs = loads(requests.get(urlClass).text)["recordset"]
+                for t in range(len(Cs)):
+                    if t == 0:
+                        Ct = Cs[t]["class_name"]
+                    else:
+                        Ct = Ct+"，"+Cs[t]["class_name"]
+                text = "这是%s（%s）使用的所有课本：\n" % (yxpName(arg[2]), Ct)
+                for i in range(len(subjectlistNum)):
+                    urlBk = "http://e.anoah.com/api/?q=json/ebag5/Book/getMyBookList&info="\
+                        "{\"class_ids\":\"%s\",\"subject_id\":%s,\"page\":1}&pmatsemit=%s" %\
+                        (yxpClassId(arg[2]), subjectlistNum[i], yxpTimeGet())
+                    Bk = loads(requests.get(urlBk).text)["recordset"]
+                    text += subjectNamelist[i]+"：\n"
+                    HaveP = False
+                    if len(Bk) == 0:
+                        text = text+"- 没有课本。\n"
+                    else:
+                        for j in range(len(Bk)):
+                            text = text+"- "+Bk[j]["name"]+"\n"
+                            if not Bk[j]["cover_photo"] is None:
+                                if not HaveP:
+                                    with open("python\\Temp\\Image\\%s.jpg" % subjectlistNum[i], "wb+") as f:
+                                        f.write(requests.get(
+                                            Bk[j]["cover_photo"]).content)
+                                        HaveP = True
+#######################################################
+            elif arg[1] == "yxpLt":  # 返回作业评语
+                textHave = 0
+                text = "这是%s的所有作业评语：\n" % (yxpName(arg[2]))
+                for j in range(len(subjectlistNum)):
+                    urlClassF = "http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
+                        "user_id=%s&status=1&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=-1&pmatsemit=%s" %\
+                        (arg[2], subjectlistNum[j],
+                         yxpClassId(arg[2]), yxpTimeGet())
+                    outF = loads(requests.get(urlClassF).text)["recordset"]
+                    outFL = outF["lists"]
+                    for i in range(outF["total_count"]):
+                        if not outFL[i]["comment"] is None:
+                            textHave = textHave+1
+                            commentText = outFL[i]["comment"]["text"].replace(
+                                "&nbsp;", "")
+                            text = text + \
+                                outFL[i]["title"]+" "+outFL[i]["teacher_name"] + \
+                                "\n老师评语："+commentText+"\n"
+                if textHave == 0:
+                    text = text+"无老师作业评语。"
+#######################################################
+            elif arg[1] == "yxpCt":  # 返回课程表
+                url = "http://api2.anoah.com/jwt/user/classes/getWithUser?user_id=%s&pmatsemit=%s" % (
+                    arg[2], yxpTimeGet())
+                urlCt = "http://e.anoah.com/api/?q=json/ebag5/Schedule/readSchedule&info="\
+                    "{\"user_id\":\"%s\",\"class_id\":\"%s\"}&pmatsemit=%s"
+                cln = loads(requests.get(url).text)["recordset"]
+                text = "这是%s的课程表：\n" % yxpName(arg[2])
+                for i in range(len(cln)):
+                    text = text+"这是%s的课程表：\n" % cln[i]["class_name"]
+                    ct = loads(requests.get(urlCt % (arg[2], cln[i]["class_id"], yxpTimeGet())).text)[
+                        "recordset"]["schedule_data"]
+                    if ct["am"][0][0] == "":
+                        text = text+"没有课程表。\n"
+                    else:
+                        text = text+"周一 周二 周三 周四 周五\n"
+                        for am in range(len(ct["am"])):
+                            for j in range(len(ct["am"][am])):
+                                sch = ct["am"][am][j]
+                                sch = sch.replace("信息技术", "信息")
+                                sch = sch.replace("道德与法治", "道法")
+                                text = text+sch+" "
+                                if j == len(ct["am"][am])-1:
+                                    text = text+"\n"
+                        for pm in range(len(ct["pm"])):
+                            for j in range(len(ct["pm"][pm])):
+                                sch = ct["pm"][pm][j]
+                                sch = sch.replace("信息技术", "信息")
+                                sch = sch.replace("道德与法治", "道法")
+                                text = text+sch+" "
+                                if j == len(ct["pm"][pm])-1:
+                                    text = text+"\n"
+#######################################################
+            elif arg[1] == "yxpNm":  # 返回积分情况
+                cid = str(yxpClassId(arg[2])).split(",")
+                urlScore2 = "http://e.anoah.com/api/?q=json/ebag/user/score/score_count&info={\"userid\":%s}" % arg[2]
+                Score2 = loads(requests.get(urlScore2).text)["recordset"]
+                url = "http://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s,\"class_id\":%s}&pmatsemit=%s"
+                text = ""
+                for i in range(len(cid)):
+                    urlNm = "http://e.anoah.com/api/?q=json/ebag/user/score/userClassRank&info={\"class_id\":\"%s\"}" % (
+                        cid[i])
+                    outc = loads(requests.get(urlNm).text)["recordset"]
+                    outs = loads(requests.get(url % (arg[2], cid[i], yxpTimeGet())).text)[
+                        "recordset"]
+                    text = text+yxpName(arg[2])+"的积分情况："+str(outs["points_count"]) + \
+                        "\n班级排行：%s 学校排行：%s" % (
+                            outs["class_rank"], outs["school_rank"])
+                    text += "\n班级排行：\n"
+                    for j in range(5):
+                        text = text + \
+                            str(j+1)+" "+outc[j]["real_name"] + \
+                            " "+str(outc[j]["points_count"])+"\n"
+                    text += "......\n"
+                    for j in range(5, 0, -1):
+                        text = text+str(len(outc)-1-j)+" "+outc[len(outc)-1-j]["real_name"]+" "+str(
+                            outc[len(outc)-1-j]["points_count"])+"\n"
+                lg = hm100 = hm80 = csGOOD = csEXAM = ht = ct = aw = cp = -1
+                for si in Score2:
+                    if si["category_id2_name"] == "登陆":
+                        lg = si["points2"]
+                    elif si["category_id2_name"] == "作业":
+                        hm100 = si["category3"][0]["points3"]
+                        hm80 = si["category3"][1]["points3"]
+                    elif si["category_id2_name"] == "互动课堂":
+                        csGOOD = si["category3"][0]["points3"]
+                        csEXAM = si["category3"][1]["points3"]
+                    elif si["category_id2_name"] == "好题本":
+                        ht = si["points2"]
+                    elif si["category_id2_name"] == "错题本":
+                        ct = si["points2"]
+                    elif si["category_id2_name"] == "我的问答":
+                        aw = si["points2"]
+                    elif si["category_id2_name"] == "班级空间":
+                        cp = si["points2"]
+                c = outs["points_count"]
+                print("%s" % (round(aw/c, 2)*100))
+                text += "=================\n登录分数：%s，%s %%\n作业分数：%s，%s %%\n- 完成作业获得分数：%s，%s %%\n"\
+                    "- 作业正确率80%%获得分数：%s，%s %%\n互动课堂分数：%s，%s %%\n- 表扬分数：%s，%s %%\n"\
+                    "- 按时提交练习分数：%s，%s %%\n好题收藏分数：%s，%s %%\n错题攻克分数：%s，%s %%\n班级问答总分数：%s，%s %%\n"\
+                    "班级空间总分数：%s，%s %%" %\
+                    (lg, round(lg/c, 2)*100,
+                     hm100+hm80, round((hm100+hm80)/c, 2)*100, hm100, round(
+                         hm100/c, 2)*100, hm80, round(hm80/c, 2)*100,
+                     csGOOD+csEXAM, round((csGOOD+csEXAM)/c, 2)*100, csGOOD, round(
+                         csGOOD/c, 2)*100, csEXAM, round(csEXAM/c, 2)*100,
+                     ht, round(ht/c, 2)*100, ct, round(ct/c, 2)*100, aw, round(aw/c, 2)*100, cp, round(cp/c, 2)*100)
+#######################################################
+            elif arg[1] == "yxpPic":  # 返回头像
+                url = "http://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s" % (
+                    arg[2], yxpTimeGet())
+                urlJson = loads(requests.get(url).text)[
+                    "recordset"]["avatar"].replace(r"\/", "/")
+                urlPic = "http://static.anoah.com"
+                if(urlJson.startswith("http")):
+                    urlPic2 = "http://www.anoah.com/ebag/static/images/noavatar.jpg"
                 else:
-                    try:
-                        if(len(arg[2]) == 1):
-                            pst = lists[int(arg[2])]
-                        else:
-                            if arg[2] in imageDict:
-                                pst = lists[imageDict[arg[2]]]
-                            else:
-                                self.text = "参数不对，目前仅支持 ** 数字 **"
-                                self.textWrite = True
-                                return
-                    except ValueError:
-                        self.text = "参数必须是数字"
-                        self.textWrite = True
-                        return
-                    except IndexError:
-                        self.text = "数字必须在1-9（包括1,9）以内"
-                        self.textWrite = True
-                        return
-                data = requests.post(url, pst).text
-                dt = data.split("android.intent.action.VIEW")
-                rd = random.randint(0, len(dt)-1)
-                # print(dt[rd])
-                dt = dt[rd].split("@")
-                if(len(dt) == 2):
-                    dt = dt[1][3:].split("Z�")
-                else:
-                    self.text = "你真倒霉，服务器发来了一些我看不懂的东西"
-                    self.textWrite = True
-                    return
-                text = dt[0].split("R")
-                try:
-                    text = text[0]+"\n"+text[1][1:]
-                except IndexError:
-                    self.text = "你真倒霉，服务器发来了一些我看不懂的东西"
-                    self.textWrite = True
-                    return
-                img = ("http"+(dt[1][1:].split("zbhttp")[1])
-                       ).split(".jpg")[0]+".jpg"
-                ps = "D:\\Program Source\\QQBOT\\python\\Temp\\Photo\\%s.png" % text.replace(
-                    "\n", "_").replace("，", ",").replace("。", ".").replace("！", "!").replace("？", "")
-                if not (os.path.exists(ps)):
-                    image = requests.get(img)
-                    with open(ps, "wb+") as f:
-                        f.write(image.content)
-                text = ps+"|"+text
+                    urlPic2 = (urlPic+urlJson).replace(".jpg", "_private.jpg")
+                print(urlPic2)
+                Pic2 = requests.get(urlPic2)
+                with open(r"python\Temp\FacePrivate.jpg", "wb+") as f:
+                    f.write(Pic2.content)
+                text = yxpName(arg[2])
 #######################################################
-            elif arg[1] == "search":  # 搜索建议
-                urlBd = f"http://suggestion.baidu.com/su?wd={arg[2]}&action=opensearch&ie=UTF-8"
-                urlBing = f"http://cn.bing.com/AS/Suggestions?pt=page.home&mkt=zh-cn&ds=mobileweb&qry={arg[2]}&cp=2&cvid=86388E638B3C48DBA852C0BF46189C46"
-                urlSg = f"http://www.sogou.com/suggnew/ajajjson?key={arg[2]}&type=web&ori=yes&pr=web"
-                url360 = f"http://sug.so.360.cn/suggest?encodein=utf-8&encodeout=utf-8&format=json&word={arg[2]}"
-                sgBd = eval(requests.get(urlBd).text)[1]
-                sgBing = BeautifulSoup(requests.get(
-                    urlBing).text, "html.parser").find_all("span")
-                sgSg = eval(requests.get(urlSg).text.replace(
-                    "window.sogou.sug", "").replace(";", ""))[0][1]
-                sg360 = loads(requests.get(url360).text)["result"]
-                text = "这是%s的搜索建议：\n" % arg[2]
-                text += "-> 百度：\n"
-                for bd in range(len(sgBd)):
-                    if bd >= 10:
-                        break
-                    text += sgBd[bd]
-                    if not bd+1 == len(sgBd):
-                        text += "，"
-                text += "\n-> 必应：\n"
-                for bing in range(len(sgBing)):
-                    if bing >= 10:
-                        break
-                    if sgBing[bing].get_text() == "":
-                        continue
-                    if sgBing[bing].get_text() == "国际版":
-                        continue
-                    text += sgBing[bing].get_text()
-                    if not bing+1 == len(sgBing):
-                        text += "，"
-                text += "\n-> 搜狗：\n"
-                for sogou in range(len(sgSg)):
-                    if sogou >= 10:
-                        break
-                    text += sgSg[sogou]
-                    if not sogou+1 == len(sgSg):
-                        text += "，"
-                text += "\n-> 360搜索：\n"
-                for s360 in range(len(sg360)):
-                    if s360 >= 10:
-                        break
-                    text += sg360[s360]["word"]
-                    if not s360+1 == len(sg360):
-                        text += "，"
-#######################################################
-            elif arg[1] == "baidu":  # 百度智能搜索
-                soup = BeautifulSoup(
-                    requests.get(f"http://www.baidu.com/s?wd={urllib.parse.quote(arg[2])}&ie=utf-8", headers=headersParameters).text, 
-                    features="html.parser")
-                soup = soup.findAll(
-                    "div", attrs={"class": "op_exactqa_s_answer"})
-                if len(soup) == 0:
-                    text = "没有找到结果，功能优化中"
-                else:
-                    try:
-                        text = soup[0].a.text.replace(" ", "").replace("\n", "")
-                    except:
-                        text = soup[0].text.replace(" ", "").replace("\n", "")
-#######################################################
-            elif arg[1] == "news":  # 新闻相关搜索
-                with open(r"D:\Program Source\QQBOT\python\Source\baiduapi.txt") as f:
-                    app = eval(f.read())[5]
-                urlNews = "http://index.baidu.com/Interface/Newwordgraph/getNews?"\
-                    "region=0&startdate=20200101&enddate=%s&wordlist[0]=%s" % (
-                        time.strftime("%Y%m%d", time.localtime()), arg[2])
-                cookir = {"BDUSS": app}
-                o = loads(requests.get(urlNews, cookies=cookir).text)
-                o = o["data"][0]["news"]
-                text = f"这是{arg[2]}的今年新闻：\n"
-                if len(o) == 0:
-                    text += "\n无相关新闻"
-                for i in range(len(o)):
+            elif arg[1] == "yxpInfo":  # 返回关于账号大量信息
+                time = yxpTimeGet()
+                urlClass = "http://e.anoah.com/api/?q=json/ebag5/User/getUserClasses&info={\"userid\":%s}&pmatsemit=%s" % (
+                    arg[2], time)
+                urlScore = "http://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s}&pmatsemit=%s" % (
+                    arg[2], time)
+                url = "http://e.anoah.com/api/?q=json/ebag/user/score/score_rank&info={\"userid\":%s,\"class_id\":%s}&pmatsemit=%s"
+                urlClassIn = "http://api2.anoah.com/jwt/user/classes/subjects?class_id=%s&pmatsemit=%s" % (
+                    yxpClassId(arg[2]), time)
+                urlLg = "http://e.anoah.com/api/?q=json/ebag/user/score/score_detail&info="\
+                    "{\"userid\":\"%s\",\"category_id2\":86,\"start\":\"\",\"end\":\"\",\"page\":1,\"pagesize\":1}" % arg[
+                        2]
+                urlHomework = "http://api2.anoah.com/jwt/homework/publish/getUndoNumForStudent?"\
+                    "user_id=%s&class_id=%s&from_date=&to_date=&pmatsemit=%s" %\
+                    (arg[2], yxpClassId(arg[2]), time)
+                urlHtCt = "http://e.anoah.com/api/?q=json/ebag5/Qtibook/favoritewrongCount&info={\"user_id\":\"%s\",\"class_id\":\"%s\"}" %\
+                    (arg[2], yxpClassId(arg[2]))
+                urlGood = "e.anoah.com/api/?q=json/ebag5/User/getUserPraise&info={\"user_id\":\"%s\",\"from\":\"\",\"to\":\"\",\"class_id\":\"%s\"}" %\
+                    (arg[2], yxpClassId(arg[2]))
+                # ---------------------------------------------
+                Class = loads(requests.get(urlClass).text)["recordset"]
+                HtCt = loads(requests.get(urlHtCt).text)["recordset"]
+                Score = loads(requests.get(urlScore).text)["recordset"]
+                ClassIn = loads(requests.get(urlClassIn).text)["recordset"]
+                Homework = loads(requests.get(urlHomework).text)["recordset"]
+                Lg = loads(requests.get(urlLg).text)[
+                    "recordset"]["data"][0]["added"]
+                Good = loads(requests.get(urlGood).text)["recordset"]
+                # ---------------------------------------------
+                text = "这是%s的部分信息：\n积分数：%s\n" % (
+                    yxpName(arg[2]), Score["points_count"])
+                for i in range(len(Class)):
                     text = text + \
-                        o[i]["source"].split(
-                            " ")[1]+" "+o[i]["title"].replace("<em>", "").replace("</em>", "")
-                    if not i+1 == len(o):
-                        text += "\n"
-#######################################################
-            elif arg[1] == "face":  # B站随机头像
-                textWrite = False
-                if (arg[2] == "bilibili") | (arg[2] == "b"):
-                    while True:
-                        out = self.face()
-                        if out == None:
-                            pass
-                        else:
-                            break
-                    # print("D:\\0.png")
-                    print(out)
-                elif (arg[2] == "qq") | (arg[2] == "q"):
-                    while True:
-                        out = self.faceqq()
-                        if out == 1:
-                            pass
-                        else:
-                            break
-            elif arg[1] == "imageSearch":
-                url = "https://ai.baidu.com/aidemo"
-                info = loads(requests.post(
-                    url, data=f"image&image_url={arg[2]}&type=advanced_general&baike_num=1", headers=forBaiduHeader).text)
-
-#######################################################
-        elif len(arg) == 4:
-            if arg[1] == "trsWd":
-                if (arg[3] == "YouDao") | (arg[3] == "-"):  # 翻译单词
-                    if " " in arg[2]:
-                        self.text = "请删除单词内空格"
-                        self.textWrite = True
-                        return
-                    urlTs = f"http://dict.iciba.com/dictionary/word/suggestion?client=6&is_need_mean=1&nums=10&word={arg[2]}"
-                    Ts = loads(requests.get(urlTs).text)
-                    text = f"这是{arg[2]}的相近词解释：\n"
-                    for i in Ts["message"]:
-                        text += f"{i['key']} ：{i['paraphrase']}\n"
-#######################################################
-            elif arg[1] == "zyb":  # 作业帮
-                urlBd = f"http://www.baidu.com/s?ie=UTF-8&wd=site:www.zybang.com%20{arg[2]}"
-                o = BeautifulSoup(requests.get(
-                    urlBd, headers=headersParameters).text, features="html.parser")
-                link = o.findAll("h3", attrs={"class", "t"})[
-                    int(arg[3])].a["href"]
-                zyb = BeautifulSoup(
-                    re.sub("<br>|<br/>", "", requests.get(link).text), features="html.parser")
-                t = zyb.findAll(
-                    "dl", attrs={"class": "card qb_wgt-question nobefore"})[0].dd.span
-                answer = zyb.findAll(
-                    "dl", attrs={"id": "good-answer"})[0].dd.span
-                tbs = t.findAll("img")
-                title = re.sub(r"<img(.*?)>|<img(.*?)/>", "{img}", str(t))
-                title = re.sub(r"<br>|</br>", "\n", title)
-                title = re.sub(r'<(.*?)>', "", title)
-                ab = answer.findAll("img")
-                answer = re.sub(r"<img(.*?)>|<img(.*?)/>", "{img}", str(answer))
-                answer = re.sub(r"<br>|</br>", "\n", answer)
-                answer = re.sub(r'<(.*?)>', "", answer)
-                count = 0
-                for i in range(len(tbs)):
-                    with open(f"D:\\Program Source\\QQBOT\\python\\Temp\\Study\\{count}.jpg", "wb+") as f:
-                        f.write(requests.get(tbs[i]["src"]).content)
-                    count += 1
-                for j in range(len(ab)):
-                    with open(f"D:\\Program Source\\QQBOT\\python\\Temp\\Study\\{count}.jpg", "wb+") as f:
-                        f.write(requests.get(ab[j]["src"]).content)
-                    count += 1
-                text = title+"的答案是：\n"+answer
-                text = re.sub("&nbsp;", "", text)
-                text = re.sub("&amp;", "&", text)
-                text = re.sub("&gt;", ">", text)
+                        "- 他在： %s ，班主任是 %s \n" % (Class[i]["class_name"],
+                                                  Class[i]["head_teacher_name"])
+                    urlNm = "http://e.anoah.com/api/?q=json/ebag/user/score/userClassRank&info={\"class_id\":\"%s\"}" % (
+                        Class[i]["class_id"])
+                    outc = loads(requests.get(urlNm).text)["recordset"]
+                    outs = loads(requests.get(
+                        url % (arg[2], Class[i]["class_id"], yxpTimeGet())).text)["recordset"]
+                    text = text+"== 在%s的积分情况：" % Class[i]["class_name"]+"\n== 班级排行：%s 学校排行：%s" % (
+                        outs["class_rank"], outs["school_rank"])+"\n"
+                text = text+"- 最后一次有效登录："+Lg+"\n- 他学习的学科：\n== "
+                for j in range(len(ClassIn)):
+                    text += ClassIn[j]["subject_name"]
+                    if not j+1 == len(ClassIn):
+                        text += "，"
+                text += "\n- 好题数量：%s | 错题总数量：%s\n" % (
+                    HtCt["favorite_count"], HtCt["wrong_count"])
+                text += "- 小红花数量：%s | 课堂表扬次数：%s\n== 回答很棒：%s | 积极主动：%s | 团队合作：%s\n" %\
+                    (Good["praise_count"], (Good["great_answer"]+Good["proactive"]+Good["team_cooperation"]),
+                     Good["great_answer"], Good["proactive"], Good["team_cooperation"])
+                for k in range(len(Homework)):
+                    text = text+"== " + \
+                        subjectNmList[str(Homework[k]["edu_subject_id"])] + \
+                        "没写的作业有：%s个\n" % Homework[k]["undo"]
 #######################################################
         elif len(arg) == 2:
-            if arg[1] == "math":  # 数学题
-                textWrite = False
-                url = "http://e.anoah.com/api/?q=json/ebag/ValidateCode/getImageCode&info={\"uid\":\"114514\"}"
-                with open(r"D:\Program Source\QQBOT\python\Temp\Math.png", "wb+") as f:
-                    f.write(requests.get(url).content)
+            if arg[1] == "yxpTIME":
+                text = yxpTimeGet()
+            else:
+                text = "Error"
 #######################################################
-            elif arg[1] == "hot":  # 微博热搜
-                url = "http://api.weibo.cn/2/guest/page?"\
-                    "from=1781065010&c=wbfastapp&lang=zh_CN&count=20&containerid=106003type%3D25%26t%3D3%26"\
-                    "disable_hot%3D1%26filter_type%3Drealtimehot&lfid=OPPO_qjs"
-                o = loads(requests.get(url).text)
-                o = o["cards"][0]["card_group"]
-                text = "微博热搜：\n"
-                for i in range(len(o)):
-                    text += str(i+1)+" "+o[i]["desc"]+"\n"
-#######################################################
-            elif arg[1] == "hotword":  # B站热词
-                url = "http://s.search.bilibili.com/main/hotword"
-                o = loads(requests.get(url).text)["list"]
-                text = "B站热词：\n"
-                for i in range(len(o)):
-                    text = text+o[i]["keyword"]+"，"
-        if(len(arg) != 1):
-            ######################################################
-            if arg[1] == "check":
-                s = ''.join(arg[2:])
-                textWrite = False
-                url = "https://ai.baidu.com/aidemo"
-                head = forBaiduHeader
-                head["Referer"] = "https://ai.baidu.com/tech/textcensoring"
-                tex = f"content={urllib.parse.quote(s)}&type=textcensor&apiType=censor&requestTime=1606136419887&token=3466a61eb8"
-                t = requests.post(url, tex, headers=head).text
-                t = t.encode("utf-8").decode("unicode_escape")
-                l = loads(t)["data"]["result"]["reject"]
-                if(len(l) == 0):
-                    text = "通过"
-                else:
-                    text = labelDict[l[0]["label"]]+f"\n{str(l)}"
-                with open(r"D:/Program Source/QQBOT/python/Temp/check.txt", "w+", encoding="UTF-8") as f:
-                    f.write(text)
-            if arg[1] == "trs":
-                if (arg[2] == "粤语") | (arg[2] == "文言文") | (arg[2] == "文言文中文") | (arg[2] == "粤语中文") | (arg[3] == "b"):  # 翻译（百度）
-                    app = []
-                    with open(r"D:\Program Source\QQBOT\python\Source\baiduapi.txt") as f:
-                        app = eval(f.read())
-                    appid = app[3]
-                    secretKey = app[4]
-                    fromLang = 'auto'
-                    info = " ".join(arg[4:])
-                    if(arg[2] == "文言文中文"):
-                        fromLang = "wyw"
-                        toLang = "zh"
-                    elif (arg[2] == "粤语中文"):
-                        fromLang = "yue"
-                        toLang = "zh"
-                    else:
-                        if (arg[2] not in trsBaiduDict):
-                            self.text = "错误的语言，尝试 help 百度翻译"
-                            self.textWrite = True
-                            return
-                    toLang = trsBaiduDict[arg[2]]
-                    salt = random.randint(32768, 65536)
-                    sign = appid + str(info) + str(salt) + secretKey
-                    sign = hashlib.md5(sign.encode()).hexdigest()
-                    # q=urllib.parse.quote(arg[3:])
-                    myurl = f"http://api.fanyi.baidu.com/api/trans/vip/translate?appid={appid}&q={urllib.parse.quote(info)}&from={fromLang}&to={toLang}&salt={salt}&sign={sign}"
-                    text = loads(requests.get(myurl).text.encode(
-                        "utf-8").decode("unicode_escape"))["trans_result"][0]["dst"]
-    #######################################################
-                elif(arg[3] == "Google") | (arg[3] == "g") | (arg[3] == "1"):  # 翻译（谷歌）
-                    if arg[2] == "中文":
-                        dest = "zh-cn"
-                    elif arg[2] == "简体中文":
-                        dest = "zh-cn"
-                    elif arg[2] == "繁体中文":
-                        dest = "zh-tw"
-                    elif arg[2] == "日语":
-                        dest = "ja"
-                    elif (arg[2] == "英语") | (arg[2] == "英文"):
-                        dest = "en"
-                    elif arg[2] == "德语":
-                        dest = "de"
-                    elif arg[2] == "加泰罗尼亚语":
-                        dest = "ca"
-                    elif arg[2] == "塔吉克语":
-                        dest = "tg"
-                    elif arg[2] == "孟加拉语":
-                        dest = "bn"
-                    elif arg[2] == "法语":
-                        dest = "fr"
-                    elif (arg[2] == "犹太语") | (arg[2] == "依地语"):
-                        dest = "yi"
-                    elif arg[2] == "芬兰语":
-                        dest = "fi"
-                    elif arg[2] == "葡萄牙语":
-                        dest = "pt"
-                    elif (arg[2] == "保加利亚") | (arg[2] == "保加利亚语"):
-                        dest = "bg"
-                    elif arg[2] == "祖鲁语":
-                        dest = "zu"
-                    elif (arg[2] == "朝鲜语") | (arg[2] == "韩国语") | (arg[2] == "韩语"):
-                        dest = "ko"
-                    elif arg[2] == "库尔德语":
-                        dest = "ku"
-                    elif arg[2] == "南非语":
-                        dest = "af"
-                    elif arg[2] == "希腊语":
-                        dest = "el"
-                    elif arg[2] == "西班牙语":
-                        dest = "es"
-                    elif (arg[2] == "象形") | (arg[2] == "阿姆哈拉文"):
-                        dest = "am"
-                    elif (arg[2] == "阿拉伯语") | (arg[2] == "阿拉伯"):
-                        dest = "ar"
-                    else:
-                        if arg[2] not in LANGUAGES:
-                            self.text = "错误的语言，如需翻译文言文等中文变体请使用：\n 翻译 [需要翻译文本] 文言文\n文言文转中文请使用：翻译 [需要翻译文本] 文言文中文"\
-                                "\n空格请用+代替谢谢"
-                            self.textWrite = True
-                            return
+        elif len(arg) == 4:
+            if arg[1] == "yxpRs":  # 返回已批改成绩
+                Classid = yxpClassId(arg[2])
+                if(arg[3] == "最新"):
+                    text = "这是 "+yxpName(arg[2])+"的全科最近分数（仅显示已批改）：\n"
+                    for i in range(13):
+                        url = "http://e.anoah.com/api/?q=json/ebag5/Statistics/getStudentScoreInfo&info="\
+                            "{\"user_id\":%s,\"class_id\":\"%s\",\"type\":0,\"subject_id\":%s,\"pagesize\":1,\"page\":1,\"start_date\":\"\",\"end_date\":\"\"}&pmatsemit=%s" %\
+                            (arg[2], Classid, subjectlistNum[i], yxpTimeGet())
+                        out = loads(requests.get(url).text)
+                        if(out["recordset"] == ""):
+                            text = text+"☛ "+subjectNamelist[i]+"：无 已批改 成绩\n"
                         else:
-                            dest = arg[3]
-                    trsor = Translator(service_urls=["translate.google.cn"])
-                    inp = " ".join(arg[4:])
-                    try:
-                        text = trsor.translate(inp, dest=dest).text
-                    except AttributeError:
-                        text = "谷歌翻译服务器的土豆可能发芽了"
-            elif arg[1] == "trsmt":
-                pass  # 翻译20次生草机
+                            if(i in range(3)):
+                                result = round(
+                                    out["recordset"][0]["student_right_rate"]*120, 2)
+                                classr = round(
+                                    out["recordset"][0]["class_right_rate"]*120, 2)
+                            else:
+                                result = round(
+                                    out["recordset"][0]["student_right_rate"]*100, 2)
+                                classr = round(
+                                    out["recordset"][0]["class_right_rate"]*100, 2)
+                            if(result >= classr):
+                                string = "■"
+                            else:
+                                string = "□"
+                            text = text+"☛ "+subjectNamelist[i]+"："+out["recordset"][0]["publish_time"]+" "+out["recordset"][0]["title"]+"\n个人：" +\
+                                str(result)+"分（"+str(out["recordset"][0]["student_right_rate"])+"）\n全班平均分：" +\
+                                str(classr)+"分（"+str(out["recordset"][0]
+                                                     ["class_right_rate"])+"）  "+string+"\n"
+                # ---------------------------------------------
+                else:
+                    subjectNamelist = ["语文", "数学", "英语", "化学（测试性功能）",
+                                       '历史', '地理', '生物', '物理', '道法', '美术', '信息', '音乐', '体育']
+                    url = "http://e.anoah.com/api/?q=json/ebag5/Statistics/getStudentScoreInfo&info="\
+                        "{\"user_id\":%s,\"class_id\":\"%s\",\"type\":0,\"subject_id\":%s,\"pagesize\":-1,\"page\":1,\"start_date\":\"\",\"end_date\":\"\"}&pmatsemit=%s" %\
+                        (arg[2], Classid, subjectList[arg[3]], yxpTimeGet())
+                    out = loads(requests.get(url).text)
+                    if(subjectList[arg[3]] in range(1, 4)):
+                        scoreMain = 120
+                    else:
+                        scoreMain = 100
+                    text = "这是 "+yxpName(arg[2]) + \
+                        "的%s最近分数（仅显示已批改）：\n" % (arg[3])
+                    for i in range(len(out["recordset"])):
+                        if(out["recordset"] == ""):
+                            text = text+"☛ "+subjectNamelist[i]+"：无 已批改 成绩\n"
+                        else:
+                            if(i in range(3)):
+                                result = round(
+                                    out["recordset"][i]["student_right_rate"]*scoreMain, 2)
+                                classr = round(
+                                    out["recordset"][i]["class_right_rate"]*scoreMain, 2)
+                            else:
+                                result = round(
+                                    out["recordset"][i]["student_right_rate"]*scoreMain, 2)
+                                classr = round(
+                                    out["recordset"][i]["class_right_rate"]*scoreMain, 2)
+                            if(result >= classr):
+                                string = "■"
+                            else:
+                                string = "□"
+                            text = text+str(i)+"  "+out["recordset"][i]["publish_time"]+" "+out["recordset"][i]["title"]+"\n个人：" +\
+                                str(result)+"分（"+str(out["recordset"][i]["student_right_rate"])+"）\n全班平均分：" +\
+                                str(classr)+"分（"+str(out["recordset"][i]
+                                                     ["class_right_rate"])+"）  "+string+"\n"
 #######################################################
-        self.text = text
-        self.textWrite = textWrite
+            elif arg[1] == "yxpAs":  # 返 回 作 业 答 案
+                classname = arg[3][:2]
+                classIndex = arg[3][2:]
+                urlClassF = "http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
+                    "user_id=%s&status=0&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=-1&pmatsemit=%s" %\
+                    (arg[2], subjectList[classname],
+                     yxpClassId(arg[2]), yxpTimeGet())
+                outF = loads(requests.get(urlClassF).text)[
+                    "recordset"]["lists"][int(classIndex)-1]["course_hour_publish_id"]
+                urlClassid = "http://api2.anoah.com/jwt/homework/stat/basicForStudent?"\
+                    "user_id=%s&publish_id=%s&pmatsemit=%s" % (
+                        arg[2], outF, yxpTimeGet())
+                outQid = loads(requests.get(urlClassid).text)["recordset"]
+                answer = ""
+                Ut = False
+                number = 0
+                text = "这是%s的作业答案：\n不建议滥用\n" % (outQid["title"])
+                # ---------------------------------------------
+                for csid in range(outQid["course_resource_count"]):
+                    if(outQid["course_resource_list"][csid]["icom_name"] == "互动试题"):
+                        Qid = outQid["course_resource_list"][csid]["qti_id"]
+                        urlAnswer = "http://e.anoah.com/api_cache/?q=json/Qti/get&info="\
+                            "{\"param\":{\"qid\":\"test:%s\",\"dataType\":1},\"pulishId\":\"%s\"}" % (
+                                Qid, outF)
+                        urlAnswerUt = "http://e.anoah.com/api_cache/?q=json/Qti/get&info="\
+                            "{\"param\":{\"qid\":\"%s\",\"dataType\":1},\"pulishId\":\"%s\"}" % (
+                                Qid, outF)
+                        outAnswer = loads(requests.get(urlAnswer).text)
+                        if outAnswer == []:
+                            outAnswer = loads(requests.get(urlAnswerUt).text)
+                            Ut = True
+                            fori = 1
+                        else:
+                            outAnswer = outAnswer["section"][0]["items"]
+                            Ut = False
+                            fori = len(outAnswer)
+                        for i in range(fori):
+                            number = number+1
+                            if not Ut:
+                                items = outAnswer[i]
+                            else:
+                                items = outAnswer
+                            textP = yxpToText(items["prompt"])
+                            if "answer" in items:
+                                if (len(textP) > 10):
+                                    text = text+str(number) + \
+                                        " "+textP[:10]+" ..."+"-> "
+                                else:
+                                    text = text+str(number) + \
+                                        " "+textP[:10]+"-> "
+                                if isinstance(items["answer"], str):
+                                    answer = yxpToText(items["answer"])
+                                    text = text+answer+"\n"
+                                else:
+                                    answerL = ""
+                                    for j in items["answer"]:
+                                        answerL = answerL+j[0]
+                                        if not j == items["answer"][-1]:
+                                            answerL = answerL+"，"
+                                    text = text+answerL+"\n"
+                            # ---------------------------------------------
+                            else:
+                                for j in range(len(items["items"])):
+                                    try:
+                                        textP = yxpToText(
+                                            items["items"][j]["prompt"])
+                                    except (KeyError,IndexError):
+                                        textP = ""
+                                    if isinstance(items["items"][j]["answer"], str):
+                                        answer = yxpToText(
+                                            items["items"][j]["answer"])
+                                    else:
+                                        answer = ""
+                                        for k in items["items"][j]["answer"]:
+                                            answer = answer+k[0]
+                                            if not k == items["items"][j]["answer"][-1]:
+                                                answer = answer+"，"
+                                    if (len(textP) > 10):
+                                        text = text + \
+                                            str(number)+"."+str(j+1)+" " + \
+                                            textP[:10]+"..."+"-> "+answer+"\n"
+                                    else:
+                                        text = text + \
+                                            str(number)+"."+str(j+1)+" " + \
+                                            textP[:10]+"-> "+answer+"\n"
 #######################################################
-
-    def face(self) -> int:
-        r = random.randint(1, 666666666)
-        url = f"http://api.bilibili.com/x/space/acc/info?mid={r}"
-        o = loads(requests.get(url).text)
-        if o["code"] == (-404):
-            return None
-        elif o["data"]["face"] == "http://i0.hdslb.com/bfs/face/member/noface.jpg":
-            return None
+            elif arg[1] == "yxpHw":  # 返回没写的作业
+                time = yxpTimeGet()
+                # ---------------------------------------------
+                if(arg[3] == "没写"):
+                    urlN = "http://api2.anoah.com/jwt/homework/publish/getUndoNumForStudent?"\
+                        "user_id=%s&class_id=%s&from_date=&to_date=&pmatsemit=%s" %\
+                        (arg[2], yxpClassId(arg[2]), yxpTimeGet())
+                    outN = loads(requests.get(urlN).text)["recordset"]
+                    text = "这是 %s 的没写作业：\n" % (yxpName(arg[2]))
+                    n = 0
+                    for i in range(len(outN)):
+                        urlNok = "http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
+                            "user_id=%s&status=0&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=-1&pmatsemit=%s" %\
+                            (arg[2], outN[i]["edu_subject_id"],
+                             yxpClassId(arg[2]), time)
+                        outNok = loads(requests.get(urlNok).text.encode(
+                            "utf-8").decode("unicode_escape"))
+                        outNok = outNok["recordset"]
+                        if (outN[i]["edu_subject_id"] == 1):
+                            subjectId = "语文"
+                        elif(outN[i]["edu_subject_id"] == 2):
+                            subjectId = "数学"
+                        elif(outN[i]["edu_subject_id"] == 3):
+                            subjectId = "英语"
+                        elif(outN[i]["edu_subject_id"] == 5):
+                            subjectId = "历史"
+                        elif(outN[i]["edu_subject_id"] == 6):
+                            subjectId = "地理"
+                        elif(outN[i]["edu_subject_id"] == 7):
+                            subjectId = "生物"
+                        elif(outN[i]["edu_subject_id"] == 8):
+                            subjectId = "物理"
+                        elif(outN[i]["edu_subject_id"] == 32):
+                            subjectId = "美术"
+                        elif(outN[i]["edu_subject_id"] == 33):
+                            subjectId = "信息"
+                        elif(outN[i]["edu_subject_id"] == 14):
+                            subjectId = "音乐"
+                        elif(outN[i]["edu_subject_id"] == 23):
+                            subjectId = "体育"
+                        elif(outN[i]["edu_subject_id"] == 437):
+                            subjectId = "道法"
+                        for j in range(0, outN[i]["undo"]):
+                            n = n+1
+                            text = text + \
+                                str(j+1)+" "+subjectId+" " + \
+                                outNok["lists"][j]["title"]+" " + \
+                                outNok["lists"][j]["teacher_name"]+"\n"
+                    text = text + \
+                        "共%s个未写作业。\n可使用 yxp答案 [用户id] [科目] [作业前数字] 查看这个作业的答案" % str(
+                            n)
+                    # ---------------------------------------------
+                else:
+                    urlNOK = "http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
+                        "user_id=%s&status=0&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=20&pmatsemit=%s" %\
+                        (arg[2], subjectList[arg[3]], yxpClassId(arg[2]), time)
+                    urlOk = "http://api2.anoah.com/jwt/homework/publish/getListForStudent?"\
+                        "user_id=%s&status=1&subject_id=%s&class_id=%s&from_date=&to_date=&page=1&per_page=20&pmatsemit=%s" %\
+                        (arg[2], subjectList[arg[3]], yxpClassId(arg[2]), time)
+                    ok = loads(requests.get(urlOk).text.encode(
+                        'utf-8').decode("unicode_escape"))
+                    nok = loads(requests.get(urlNOK).text.encode(
+                        'utf-8').decode("unicode_escape"))
+                    if(ok["status"] == 0):
+                        text = ok["msg"]
+                    else:
+                        # ---------------------------------------------
+                        okjs = ok["recordset"]
+                        nokjs = nok["recordset"]
+                        text = "这是"+yxpName(arg[2])+"的"+arg[3]+"作业情况：\n"
+                        lists = okjs["lists"]
+                        noklists = nokjs["lists"]
+                        write = 1
+                        if(okjs["total_count"] == 0):
+                            text = "没有写了的作业。\n"
+                            write = 0
+                        else:
+                            if(int(okjs["total_count"]) > int(okjs["per_page"])):
+                                rg = okjs["per_page"]
+                            else:
+                                rg = okjs["total_count"]
+                            for i in range(int(rg)):
+                                if i == 0:
+                                    text = text + \
+                                        "☛ 写了的作业（%s个）：\n" % (
+                                            okjs["total_count"])
+                                # +"\n作业ID："+lists[i]["course_hour_publish_id"]
+                                text = text+lists[i]["start_time"]+" "+lists[i]["title"] + \
+                                    " "+lists[i]["subject_name"] + \
+                                    lists[i]["teacher_name"]
+                                if not i == int(okjs["total_count"]):
+                                    text = text+"\n"
+                            if (int(okjs["per_page"]) < int(okjs["total_count"])):
+                                text = text + \
+                                    "※ 仅显示%s个，但一共有%s个作业完成\n" % (
+                                        okjs["per_page"], okjs["total_count"])
+                        if(nokjs["total_count"] == 0):
+                            if(write == 0):
+                                text = "老师没留过作业。"
+                            else:
+                                text = text+"没有没写的作业。"
+                        else:
+                            if(int(nokjs["total_count"]) > int(nokjs["per_page"])):
+                                rg = nokjs["per_page"]
+                            else:
+                                rg = nokjs["total_count"]
+                            for i in range(int(rg)):
+                                if i == 0:
+                                    text = text + \
+                                        "☛ 没写的作业（%s个）：\n" % (
+                                            nokjs["total_count"])
+                                # +"\n作业ID："+noklists[i]["course_hour_publish_id"]
+                                text = text+noklists[i]["start_time"]+" "+noklists[i]["title"] + \
+                                    " "+noklists[i]["subject_name"] + \
+                                    noklists[i]["teacher_name"]
+                                if not i == int(okjs["total_count"]):
+                                    text = text+"\n"
+                            if (int(nokjs["per_page"]) < int(nokjs["total_count"])):
+                                text = text + \
+                                    "※ 仅显示%s个，但一共有%s个作业未完成" % (
+                                        nokjs["per_page"], nokjs["total_count"])
+#######################################################
         else:
-            with open(f"D:\\Program Source\\QQBOT\\python\\Temp\\Face\\{r}.jpg", "wb+") as f:
-                f.write(requests.get(o["data"]["face"]).content)
-            return r
+            text = "参数不够"
+        self.text = text
 
-    def faceqq(self):
-        return 0
+
 #######################################################
-
-
 if __name__ == "__main__":
-    wb = webapi(arg)
+    text = webyxp(argM).text
     try:
-        # wb=webapi(arg)
-        text = wb.text
-        textWrite = wb.textWrite
-    except BaseException as e:
-        text = e
-        textWrite = True
-    if(False):
-        with open(r"D:\Program Source\QQBOT\python\Temp\temp.txt", "w+", encoding="UTF-8") as f:
-            if(textWrite):
-                text = str(text)
-                f.write(text)
-                print(text)
-    else:
-        print(text)
+        pass  # text=webyxp(argM).text
+    except BaseException as err:
+        text = "错误：\n"+err
+    with open(r"Temp\temp.txt", "w+", encoding="UTF-8") as f:
+        if(is_pydroid):
+            print(text)
+        else:
+            text = str(text)
+            f.write(text)
+            print(text)

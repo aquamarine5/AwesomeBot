@@ -262,7 +262,7 @@ class webapi():
                     Ts = loads(requests.get(urlTs).text)
                     text = f"这是{arg[2]}的相近词解释：\n"
                     for i in Ts["message"]:
-                        text += f"{i["key"]} ：{i["paraphrase"]}\n"
+                        text += f"{i['key']} ：{i['paraphrase']}\n"
 #######################################################
             elif arg[1] == "zyb":  # 作业帮
                 urlBd = f"http://www.baidu.com/s?ie=UTF-8&wd=site:www.zybang.com%20{arg[2]}"

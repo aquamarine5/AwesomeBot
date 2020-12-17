@@ -41,6 +41,7 @@ jobs:
         python -m pip install requests
         python -m pip install beautifulsoup4
         python -m pip install googletrans
+        python -m pip install pillow
     - name: Test with pytest for webapi.py
       run: |
         python python/webapi.py

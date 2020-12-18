@@ -14,7 +14,7 @@ arg = sys.argv
 
 
 class webapi():
-    def __init__(self, arg):
+    def __init__(self, arg:list,iswrite:bool):
         textWrite = True
         text = ""
         imageDict = {
@@ -145,8 +145,9 @@ class webapi():
                     "\n", "_").replace("，", ",").replace("。", ".").replace("！", "!").replace("？", "")
                 if not (os.path.exists(ps)):
                     image = requests.get(img)
-                    with open(ps, "wb+") as f:
-                        f.write(image.content)
+                    if iswrite:
+                        with open(ps, "wb+") as f:
+                            f.write(image.content)
                 text = ps+"|"+text
 #######################################################
             elif arg[1] == "search":  # 搜索建议
@@ -209,8 +210,12 @@ class webapi():
                         text = soup[0].text.replace(" ", "").replace("\n", "")
 #######################################################
             elif arg[1] == "news":  # 新闻相关搜索
-                with open(r"D:\Program Source\QQBOT\python\Source\baiduapi.txt") as f:
-                    app = eval(f.read())[5]
+                if iswrite:
+                    with open(r"D:\Program Source\QQBOT\python\Source\baiduapi.txt") as f:
+                        app = eval(f.read())[5]
+                else:
+                    with open(r".\python\Source\baiduapi.txt") as f:
+                        app = eval(f.read())[5]
                 urlNews = "http://index.baidu.com/Interface/Newwordgraph/getNews?"\
                     "region=0&startdate=20200101&enddate=%s&wordlist[0]=%s" % (
                         time.strftime("%Y%m%d", time.localtime()), arg[2])
@@ -285,25 +290,34 @@ class webapi():
                 answer = re.sub(r"<br>|</br>", "\n", answer)
                 answer = re.sub(r'<(.*?)>', "", answer)
                 count = 0
+                endtext = ""
                 for i in range(len(tbs)):
-                    with open(f"D:\\Program Source\\QQBOT\\python\\Temp\\Study\\{count}.jpg", "wb+") as f:
-                        f.write(requests.get(tbs[i]["src"]).content)
+                    if iswrite:
+                        with open(f"D:\\Program Source\\QQBOT\\python\\Temp\\Study\\{count}.jpg", "wb+") as f:
+                            f.write(requests.get(tbs[i]["src"]).content)
+                    else:
+                        endtext+=tbs[i]["src"]+"\n"
                     count += 1
                 for j in range(len(ab)):
-                    with open(f"D:\\Program Source\\QQBOT\\python\\Temp\\Study\\{count}.jpg", "wb+") as f:
-                        f.write(requests.get(ab[j]["src"]).content)
+                    if iswrite:
+                        with open(f"D:\\Program Source\\QQBOT\\python\\Temp\\Study\\{count}.jpg", "wb+") as f:
+                            f.write(requests.get(ab[j]["src"]).content)
+                    else:
+                        endtext+=ab[j]["src"]+"\n"
                     count += 1
                 text = title+"的答案是：\n"+answer
                 text = re.sub("&nbsp;", "", text)
                 text = re.sub("&amp;", "&", text)
                 text = re.sub("&gt;", ">", text)
+                if not iswrite:text+=f"\nhave {count}'s image and this is the image's url:\n{endtext}"
 #######################################################
         elif len(arg) == 2:
             if arg[1] == "math":  # 数学题
                 textWrite = False
                 url = "http://e.anoah.com/api/?q=json/ebag/ValidateCode/getImageCode&info={\"uid\":\"114514\"}"
-                with open(r"D:\Program Source\QQBOT\python\Temp\Math.png", "wb+") as f:
-                    f.write(requests.get(url).content)
+                if iswrite:
+                    with open(r"D:\Program Source\QQBOT\python\Temp\Math.png", "wb+") as f:
+                        f.write(requests.get(url).content)
 #######################################################
             elif arg[1] == "hot":  # 微博热搜
                 url = "http://api.weibo.cn/2/guest/page?"\
@@ -337,13 +351,18 @@ class webapi():
                     text = "通过"
                 else:
                     text = labelDict[stri[0]["label"]]+"\n"+str(stri)
-                with open(r"D:/Program Source/QQBOT/python/Temp/check.txt", "w+", encoding="UTF-8") as f:
-                    f.write(text)
+                if iswrite:
+                    with open(r"D:/Program Source/QQBOT/python/Temp/check.txt", "w+", encoding="UTF-8") as f:
+                        f.write(text)
             if arg[1] == "trs":
                 if (arg[2] == "粤语") | (arg[2] == "文言文") | (arg[2] == "文言文中文") | (arg[2] == "粤语中文") | (arg[3] == "b"):  # 翻译（百度）
                     app = []
-                    with open(r"D:\Program Source\QQBOT\python\Source\baiduapi.txt") as f:
-                        app = eval(f.read())
+                    if iswrite:
+                        with open(r"D:\Program Source\QQBOT\python\Source\baiduapi.txt") as f:
+                            app = eval(f.read())
+                    else:
+                        with open(r".\python\Source\baiduapi.txt") as f:
+                            app = eval(f.read())
                     appid = app[3]
                     secretKey = app[4]
                     fromLang = 'auto'
@@ -439,12 +458,17 @@ class webapi():
         url = f"http://api.bilibili.com/x/space/acc/info?mid={r}"
         o = loads(requests.get(url).text)
         if o["code"] == (-404):
+            if not iswrite:print(f"failed in {r}")
             return None
         elif o["data"]["face"] == "http://i0.hdslb.com/bfs/face/member/noface.jpg":
+            if not iswrite:print(f"failed in {r}")
             return None
         else:
-            with open(f"D:\\Program Source\\QQBOT\\python\\Temp\\Face\\{r}.jpg", "wb+") as f:
-                f.write(requests.get(o["data"]["face"]).content)
+            if iswrite:
+                with open(f"D:\\Program Source\\QQBOT\\python\\Temp\\Face\\{r}.jpg", "wb+") as f:
+                    f.write(requests.get(o["data"]["face"]).content)
+            else:
+                print(f"success:{r}")
             return r
 
     def faceqq(self):
@@ -453,7 +477,13 @@ class webapi():
 
 
 if __name__ == "__main__":
-    wb = webapi(arg)
+    iswrite=True
+    if "--diswrite-file" in arg:
+        iswrite=False
+        arg.remove("--diswrite-file")
+        print("open the diswrite any file mode.")
+        print(arg)
+    wb = webapi(arg,iswrite)
     try:
         # wb=webapi(arg)
         text = wb.text

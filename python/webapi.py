@@ -333,10 +333,10 @@ class webapi():
                 t = requests.post(url, tex, headers=head).text
                 t = t.encode("utf-8").decode("unicode_escape")
                 stri = loads(t)["data"]["result"]["reject"]
-                if(len(l) == 0):
+                if(len(stri) == 0):
                     text = "通过"
                 else:
-                    text = labelDict[l[0]["label"]]+"\n"+str(stri)
+                    text = labelDict[stri[0]["label"]]+"\n"+str(stri)
                 with open(r"D:/Program Source/QQBOT/python/Temp/check.txt", "w+", encoding="UTF-8") as f:
                     f.write(text)
             if arg[1] == "trs":

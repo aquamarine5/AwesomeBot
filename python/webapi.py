@@ -355,6 +355,10 @@ class webapi():
                     with open(r"D:/Program Source/QQBOT/python/Temp/check.txt", "w+", encoding="UTF-8") as f:
                         f.write(text)
             if arg[1] == "trs":
+                print(__file__)
+                for root,dirs,files in os.walk("."):
+                    for file in files:
+                        print(root+"\\"+file)
                 if (arg[2] == "粤语") | (arg[2] == "文言文") | (arg[2] == "文言文中文") | (arg[2] == "粤语中文") | (arg[3] == "b"):  # 翻译（百度）
                     app = []
                     if iswrite:

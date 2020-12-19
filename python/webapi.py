@@ -309,7 +309,7 @@ class webapi():
                 text = re.sub("&nbsp;", "", text)
                 text = re.sub("&amp;", "&", text)
                 text = re.sub("&gt;", ">", text)
-                if not iswrite:text+=f"\nhave {count}'s image and this is the image's url:\n{endtext}"
+                if not iswrite and count != 0:text+=f"\nhave {count}'s image and this is the image's url:\n{endtext}"
 #######################################################
         elif len(arg) == 2:
             if arg[1] == "math":  # 数学题
@@ -318,6 +318,19 @@ class webapi():
                 if iswrite:
                     with open(r"D:\Program Source\QQBOT\python\Temp\Math.png", "wb+") as f:
                         f.write(requests.get(url).content)
+#######################################################
+            elif arg[1] == "shop":  #买东西
+                url = "http://api.pinduoduo.com/api/byd/hydrogen/query?kyy_version=0.0.1&app_name=byd_market_mcard&scene_name=market_goods&offset=1&count=1&opt_id=0"
+                r = loads(requests.get(url).text)
+                imgurl = r["data"][0]["hd_thumb_url"]
+                goodsname = f"{r['data'][0]['goods_name']}  {r['data'][0]['short_name']}"
+                if 'ranking_list_tag' in r:
+                    text = f"{goodsname}|| {r['data'][0]['ranking_list_tag']['text']}"
+                else:
+                    text =f"{goodsname}||"
+                if iswrite:
+                    with open(r"D:\Program Source\QQBOT\python\Temp\shop.jpg","wb+") as f:
+                        f.write(requests.get(imgurl).content)
 #######################################################
             elif arg[1] == "hot":  # 微博热搜
                 url = "http://api.weibo.cn/2/guest/page?"\
@@ -355,10 +368,6 @@ class webapi():
                     with open(r"D:/Program Source/QQBOT/python/Temp/check.txt", "w+", encoding="UTF-8") as f:
                         f.write(text)
             if arg[1] == "trs":
-                print(__file__)
-                for root,dirs,files in os.walk("."):
-                    for file in files:
-                        print(root+"\\"+file)
                 if (arg[2] == "粤语") | (arg[2] == "文言文") | (arg[2] == "文言文中文") | (arg[2] == "粤语中文") | (arg[3] == "b"):  # 翻译（百度）
                     app = []
                     if iswrite:

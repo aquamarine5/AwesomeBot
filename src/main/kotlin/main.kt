@@ -14,26 +14,28 @@ import java.io.*
 import java.lang.Exception
 import java.lang.IndexOutOfBoundsException
 
-const val program="\"d:/Program Source/QQBOT/python/webyxp.py\""
-const val webapi="\"d:/Program Source/QQBOT/python/webapi.py\""
-const val func="\"d:/Program Source/QQBOT/python/func.py\""
-const val image="\"d:/Program Source/QQBOT/python/image.py\""
-const val temp="D:/Program Source/QQBOT/python/Temp/temp.txt"
-const val elog="D:/Program Source/QQBOT/python/Temp/t.log"
-const val imageTemp="D:/Program Source/QQBOT/python/Temp/temp.jpg"
-const val imageMath="D:/Program Source/QQBOT/python/Temp/Math.png"
-const val imagePrivate="D:/Program Source/QQBOT/python/Temp/FacePrivate.jpg"
-enum class MessageType{
-    CodeDefineBySelf,Common,Image
+const val program = "\"d:/Program Source/QQBOT/python/webyxp.py\""
+const val webapi = "\"d:/Program Source/QQBOT/python/webapi.py\""
+const val func = "\"d:/Program Source/QQBOT/python/func.py\""
+const val image = "\"d:/Program Source/QQBOT/python/image.py\""
+const val temp = "D:/Program Source/QQBOT/python/Temp/temp.txt"
+const val elog = "D:/Program Source/QQBOT/python/Temp/t.log"
+const val imageTemp = "D:/Program Source/QQBOT/python/Temp/temp.jpg"
+const val imageMath = "D:/Program Source/QQBOT/python/Temp/Math.png"
+const val imagePrivate = "D:/Program Source/QQBOT/python/Temp/FacePrivate.jpg"
+
+enum class MessageType {
+    CodeDefineBySelf, Common, Image
 }
+
 @InternalCoroutinesApi
 suspend fun main() {
 
     val qqId = 924410958L//Bot的QQ号，需为Long类型，在结尾处添加大写L
     val password = File("D:/Program Source/QQBOT/password.txt").readText()//Bot的密码
-    val miraiBot = Bot(qqId, password){
+    val miraiBot = Bot(qqId, password) {
         fileBasedDeviceInfo("device.json")
-        protocol=BotConfiguration.MiraiProtocol.ANDROID_PHONE
+        protocol = BotConfiguration.MiraiProtocol.ANDROID_PHONE
     }.alsoLogin()
     var type: MessageType?
     var photopath = ""
@@ -44,36 +46,36 @@ suspend fun main() {
     miraiBot.getGroup(830875502L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
     miraiBot.getGroup(1019390914L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
     miraiBot.getGroup(1019390914L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
-    miraiBot.subscribeAlways<BotInvitedJoinGroupRequestEvent> {event->
+    miraiBot.subscribeAlways<BotInvitedJoinGroupRequestEvent> { event ->
         event.accept()
     }
-    miraiBot.subscribeAlways<NewFriendRequestEvent> {event->
+    miraiBot.subscribeAlways<NewFriendRequestEvent> { event ->
         event.accept()
     }
     miraiBot.subscribeAlways<MessageEvent> { event ->
-        type=null
-        print(event.message[Image]?.queryUrl()+"\n")
-        if((event.sender as Member).group.id==859089296L)return@subscribeAlways
-        try{
+        type = null
+        print(event.message[Image]?.queryUrl() + "\n")
+        if ((event.sender as Member).group.id == 859089296L) return@subscribeAlways
+        try {
             val message = event.message.content
-            if(!check(event))return@subscribeAlways
-            if(message=="机器人 off"){
-                reply(At(event.sender as Member)+" 呜呜呜有人要关我")
+            if (!check(event)) return@subscribeAlways
+            if (message == "机器人 off") {
+                reply(At(event.sender as Member) + " 呜呜呜有人要关我")
                 return@subscribeAlways
-            }
-            else{
+            } else {
                 val ct = message.split(" ")
                 when (ct[0]) {
                     "yxpLt", "yxp老师评语" -> command = "python $program yxpLt ${ct[1]}"
-                    "yxpInfo", "yxp信息" ->  command = "python $program yxpInfo ${ct[1]}"
+                    "yxpInfo", "yxp信息" -> command = "python $program yxpInfo ${ct[1]}"
                     "yxpNm", "yxp积分" -> command = "python $program yxpNm ${ct[1]}"
                     "yxpPRs", "yxpPrs", "yxp批改成绩", "yxpRs" -> command = "python $program yxpRs ${ct[1]} ${ct[2]}"
                     "yxpAs", "yxp答案" -> command = "python $program yxpAs ${ct[1]} ${ct[2]}${ct[3]}"
                     "给张泉铭一个相遇之缘" -> {
-                        type=MessageType.CodeDefineBySelf
-                        reply("爬") }
+                        type = MessageType.CodeDefineBySelf
+                        reply("爬")
+                    }
                     "yxpPic", "yxppic", "yxp照片" -> {
-                        type=MessageType.CodeDefineBySelf
+                        type = MessageType.CodeDefineBySelf
                         "python $program yxpPic ${ct[1]}".execute().waitFor()
                         val file = File(temp).readText()
                         if (file == "") {
@@ -93,33 +95,29 @@ suspend fun main() {
                                     command = "python $program yxpHw ${ct[1]} ${ct[2]}"
                                 }
                                 else -> {
-                                    type=MessageType.CodeDefineBySelf
+                                    type = MessageType.CodeDefineBySelf
                                     reply("科目不对，仅支持：语文，数学，英语，历史，道法，生物，地理，信息，物理，体育，美术，音乐")
                                 }
                             }
                         } else {
-                            type=MessageType.CodeDefineBySelf
+                            type = MessageType.CodeDefineBySelf
                             reply("给的东西不够或者多了，例子：yxp作业 1585745 生物")
                         }
                     }
                     "yxprd", "yxp随机", "yxpRand", "yxp随机作业" -> command = "python $program yxpDCom ${ct[1]}"
                     "eat" -> {
-                        type=MessageType.Image
+                        type = MessageType.Image
                         command = "python $image yz ${ct[1]}"
-                        photopath=imageTemp
+                        photopath = imageTemp
                     }
                     "数学题", "math" -> {
-                        type=MessageType.Image
+                        type = MessageType.Image
                         command = "python $webapi math"
-                        photopath=imageMath
+                        photopath = imageMath
                     }
-                    "zyb","作业帮","作业"-> {
+                    "zyb", "作业帮", "作业" -> {
                         type = MessageType.CodeDefineBySelf
-                        val num: Int = if (ct.size == 2) {
-                            0
-                        } else {
-                            ct[2].toInt()
-                        }
+                        val num = if (ct.size == 2) 0 else ct[2].toInt()
                         val msg = "python $webapi zyb ${ct[1]} $num".runExecute().split("{img}")
                         buildMessageChain {
                             if (msg.size == 1) {
@@ -143,51 +141,55 @@ suspend fun main() {
                         }
                         command = "python $webapi trsWd ${ct[1]} $engine"
                     }
-                    "trsg","谷歌翻译","翻译谷歌","translate_google","翻译g"->{
-                        if(ct.size==1){
+                    "trsg", "谷歌翻译", "翻译谷歌", "translate_google", "翻译g" -> {
+                        if (ct.size == 1) {
                             reply("请输入翻译参数")
                             return@subscribeAlways
                         }
-                        if(ct.size==2){
+                        if (ct.size == 2) {
                             reply("请输入翻译语言")
                             return@subscribeAlways
                         }
                         command = "python $webapi trs ${ct[1]} g ${ct.dropLast(2).joinToString(" ")}"
                     }
                     "trs", "翻译", "translate" -> {
-                        if(ct.size==1){
+                        if (ct.size == 1) {
                             reply("请输入翻译参数")
                             return@subscribeAlways
                         }
-                        if(ct.size==2){
+                        if (ct.size == 2) {
                             reply("请输入翻译语言")
                             return@subscribeAlways
                         }
                         command = "python $webapi trs ${ct[1]} b ${ct.drop(2).joinToString(" ")}"
                     }
-
+                    "shop", "买东西", "商品", "拼多多" -> {
+                        type = MessageType.CodeDefineBySelf
+                        val r = "python $webapi shop".runExecute().split("||")
+                        reply("${r[0]}${r[1]}")
+                        File("D:\\Program Source\\QQBOT\\python\\Temp\\shop.jpg").sendAsImage()
+                    }
                     "搜索建议", "idea", "search" -> {
-                        type=MessageType.CodeDefineBySelf
+                        type = MessageType.CodeDefineBySelf
                         reply("python $webapi search ${ct[1]}".runExecute()).recallIn(60000)
                     }
-                    "baidu","百度"->command = "python $webapi baidu ${ct[1]}"
-                    "hotword","热词"->command = "python $webapi hotword"
-                    "在？"->reply("在")
-                    "news","新闻"->command = "python $webapi news ${ct[1]}"
-                    "face","头像"->{
-                        type=MessageType.CodeDefineBySelf
-                        val result="python $webapi face b".runExecute()
+                    "baidu", "百度" -> command = "python $webapi baidu ${ct[1]}"
+                    "hotword", "热词" -> command = "python $webapi hotword"
+                    "在？" -> reply("在")
+                    "news", "新闻" -> command = "python $webapi news ${ct[1]}"
+                    "face", "头像" -> {
+                        type = MessageType.CodeDefineBySelf
+                        val result = "python $webapi face b".runExecute()
                         print("D:\\Program Source\\QQBOT\\python\\Temp\\Face\\${result.trim().toInt()}.jpg\n")
-                        try{
+                        try {
                             File("D:\\Program Source\\QQBOT\\python\\Temp\\Face\\${result.trim().toInt()}.jpg").sendAsImage()
-                        }
-                        catch(e:IllegalStateException){
+                        } catch (e: IllegalStateException) {
                             reply("图片发送失败，原因：网速过慢\n你可以资助我来使网速更快：")
                         }
                     }
                     "help", "帮助" -> {
-                        type=MessageType.CodeDefineBySelf
-                        if(ct.size == 1){
+                        type = MessageType.CodeDefineBySelf
+                        if (ct.size == 1) {
                             File("D:\\Program Source\\QQBOT\\docs\\help.png").sendAsImage()
                             /*
                             reply("""->括号内为简写如："搜索建议 机器人"可替换成"idea 机器人"<-
@@ -211,9 +213,8 @@ help 翻译
 help 图片""".trimMargin()).recallIn(32000)
 
                              */
-                        }
-                        else if (ct.size == 2){
-                            when(ct[1]) {
+                        } else if (ct.size == 2) {
+                            when (ct[1]) {
                                 "谷歌翻译" -> reply("""支持的翻译语种：
 （另：谷歌翻译服务器日常土豆）
 简体中文，繁体中文，文言文，粤语，
@@ -236,7 +237,7 @@ help 图片""".trimMargin()).recallIn(32000)
                             }
                         }
                     }
-                    "yxpHelp", "yxp帮助" ,"优学派帮助" -> {
+                    "yxpHelp", "yxp帮助", "优学派帮助" -> {
                         reply("""
 --优学派方面（快 没 用 了）--
 github.com/awesomehhhhh/EbagUtil
@@ -250,60 +251,60 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent()).recallIn(30000)
                     "ip" -> command = "python $webapi ip ${ct[1]}"
                     "pos" -> command = "python $webapi pos ${ct[1]}"
                     "qrcode", "二维码生成" -> {
-                        type=MessageType.CodeDefineBySelf
-                        val qrtext = message.replace("qrcode ", "").replace("二维码生成 ","")
+                        type = MessageType.CodeDefineBySelf
+                        val qrtext = message.replace("qrcode ", "").replace("二维码生成 ", "")
                         "myqr $qrtext -d \"D:/Program Source/QQBOT/python/Temp\"".execute().waitFor()
-                        photopath="D:/Program Source/QQBOT/python/Temp/qrcode.png"
+                        photopath = "D:/Program Source/QQBOT/python/Temp/qrcode.png"
                         File(photopath).sendAsImage()
                     }
-                    "photo","图片","每日一图"->{
-                        type=MessageType.CodeDefineBySelf
-                        val index:Int = when {
-                            ct.size==1 -> -1
-                            ct[1].length>=2 -> {
+                    "photo", "图片", "每日一图" -> {
+                        type = MessageType.CodeDefineBySelf
+                        val index: Int = when {
+                            ct.size == 1 -> -1
+                            ct[1].length >= 2 -> {
                                 reply("数字过大，仅支持1-9（包括1-9）")
                                 return@subscribeAlways
                             }
                             else -> {
-                                try{
+                                try {
                                     ct[1].toInt()
-                                }catch (e:NumberFormatException){
+                                } catch (e: NumberFormatException) {
                                     reply("参数不是数字")
                                     return@subscribeAlways
                                 }
                             }
                         }
-                        val f="python $webapi photo $index".runExecute().split("|")
-                        try{
+                        val f = "python $webapi photo $index".runExecute().split("|")
+                        try {
                             reply(f[1].replace("_", "\n"))
                             File(f[0]).sendAsImage()
-                        }
-                        catch(e:IndexOutOfBoundsException){
+                        } catch (e: IndexOutOfBoundsException) {
                             reply("你真倒霉")
                         }
                     }
                     "性别判断", "ng", "Sex" -> command = "python $func ng ${ct[1]}"
-                    "hot","微博热搜","wb","微博" -> {
-                        type=MessageType.CodeDefineBySelf
+                    "hot", "微博热搜", "wb", "微博" -> {
+                        type = MessageType.CodeDefineBySelf
                         reply("python $webapi hot".runExecute()).recallIn(30000)
                     }
-                    else->{
-                        type=null
+                    else -> {
+                        type = null
                     }
                 }
-                when (type){
-                    MessageType.Common->{
+                when (type) {
+                    MessageType.Common -> {
                         reply(command.runExecute())
-                        type=MessageType.Common
+                        type = MessageType.Common
                     }
-                    MessageType.Image->{
+                    MessageType.Image -> {
                         command.execute().waitFor()
                         File(photopath).sendAsImage()
-                        type=MessageType.Common
+                        type = MessageType.Common
                     }
+
                 }
             }
-        }catch(e:Exception){
+        } catch (e: Exception) {
             reply(e.toString())
             e.printStackTrace()
         }
@@ -312,30 +313,30 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent()).recallIn(30000)
     miraiBot.join() // 等待 机器人 离线, 避免主线程退出
 }
 
-suspend fun check(event: MessageEvent):Boolean{
-    val message=event.message.content
-    if(message.length<50)return true
-    if(message.contains("<?xml version='1.0' encoding='UTF-8' standalone='yes'?>"))return true
-    if(event.sender.id== 2854196310L)return true
-    if((event.sender as Member).permission.level==1)return true
-    if(message.contains("bilibili.com"))return true
-    if(message.contains("docs.microsoft.com"))return true
-    if(message.contains("unity.cn"))return true
-    if(message.contains("unity.com"))return true
-    if(message.contains("csdn.com"))return true
-    if(message.contains("github.com"))return true
-    val result="python $webapi check \"${event.message.content}\"".runExecute()
-    if(event.message.content.contains("感兴趣的可以加一下进去交流学习哦")) checkFailed(event,result)
+suspend fun check(event: MessageEvent): Boolean {
+    val message = event.message.content
+    if (message.length < 50) return true
+    if (message.contains("<?xml version='1.0' encoding='UTF-8' standalone='yes'?>")) return true
+    if (event.sender.id == 2854196310L) return true
+    if ((event.sender as Member).permission.level == 1) return true
+    if (message.contains("bilibili.com")) return true
+    if (message.contains("docs.microsoft.com")) return true
+    if (message.contains("unity.cn")) return true
+    if (message.contains("unity.com")) return true
+    if (message.contains("csdn.com")) return true
+    if (message.contains("github.com")) return true
+    val result = "python $webapi check \"${event.message.content}\"".runExecute()
+    if (event.message.content.contains("感兴趣的可以加一下进去交流学习哦")) checkFailed(event, result)
     return if (result.contains("通过")) {
         print(result)
         true
     } else {
-        checkFailed(event,result)
+        checkFailed(event, result)
         false
     }
 }
 
-suspend fun checkFailed(event: MessageEvent,result:String){
+suspend fun checkFailed(event: MessageEvent, result: String) {
     try {
         //(event.sender as Member).kick("Bot测试")
     } catch (err: PermissionDeniedException) {
@@ -345,31 +346,33 @@ suspend fun checkFailed(event: MessageEvent,result:String){
     }
     File(elog).writeText(File(elog).readText() + "\n" + event.senderName + " " + event.message.content)
 }
+
 fun String.execute(): Process {
     val runtime = Runtime.getRuntime()
     return runtime.exec(this)
 }
-fun Process.waitForThis():Process{
+
+fun Process.waitForThis(): Process {
     this.waitFor()
     return this
 }
-fun String.runExecute() : String = this.execute().waitForThis().inputStream.readString()
-fun InputStream.readString():String{
-    val bos=ByteArrayOutputStream()
-    try{
-        val a=ByteArray(1)
+
+fun String.runExecute(): String = this.execute().waitForThis().inputStream.readString()
+
+fun InputStream.readString(): String {
+    val bos = ByteArrayOutputStream()
+    return try {
+        val a = ByteArray(1)
         var len: Int
-        do{
-            len=this.read(a)
+        do {
+            len = this.read(a)
             bos.write(a)
-        }while (-1!=len)
-        return bos.toString("gbk").dropLast(1)
-    }
-    catch (e:Exception){
+        } while (-1 != len)
+        bos.toString("gbk").dropLast(1)
+    } catch (e: Exception) {
         e.printStackTrace()
-        return e.toString()
-    }
-    finally {
+        e.toString()
+    } finally {
         bos.close()
     }
 }

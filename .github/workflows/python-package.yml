@@ -40,21 +40,29 @@ jobs:
       run: |
         python -m pip install requests
         python -m pip install beautifulsoup4
-        python -m pip install googletrans
+        python -m pip install googletrans==4.0.0-rc1
         python -m pip install pillow
     - name: Test webapi.py common exception
       run: |
         python python/webapi.py
-#        pytest python/webapi.py
     - name: Test webapi.py in command -> trs
       run: |
-        #python python/webapi.py --diswrite-file trs 英文 b 给张泉铭一个相遇之缘
+        python python/webapi.py --diswrite-file trs 英文 Google 给张泉铭一个相遇之缘
+    - name: Test webapi.py in command -> ip
+      run: |
+        python python/webapi.py --diswrite-file ip 66.66.66.66
+    - name: Test webapi.py in command -> pos
+      run: |
+        python python/webapi.py --diswrite-file pos 22.222,33.333
+    - name: Test webapi.py in command -> trsWd
+      run: |
+        python python/webapi.py --diswrite-file trsWd impact YouDao
     - name: Test webapi.py in command -> face
       run: |
         python python/webapi.py --diswrite-file face b
     - name: Test webapi.py in command -> check
       run: |
-        python python/webapi.py --diswrite-file check 卢本伟nb
+        python python/webapi.py --diswrite-file check 咋地啊咋地啊 给爷爬 你个sb
     - name: Test webapi.py in command -> math
       run: |
         python python/webapi.py --diswrite-file math
@@ -66,10 +74,10 @@ jobs:
         python python/webapi.py --diswrite-file hotword
     - name: Test webapi.py in command -> zyb
       run: |
-        python python/webapi.py --diswrite-file zyb 原神 0
-    - name: Test webapi.py in command -> news
+        python python/webapi.py --diswrite-file zyb 二次函数 0
+    - name: Test webapi.py in command -> shop
       run: |
-        #python python/webapi.py --diswrite-file news 原神
+        python python/webapi.py --diswrite-file shop
     - name: Test webapi.py in command -> search
       run: |
         python python/webapi.py --diswrite-file search 天空之翼
@@ -79,8 +87,6 @@ jobs:
     - name: Test webyxp.py common exception
       run: |
         python python/webyxp.py
-#        pytest python/webyxp.py
     - name: Test image.py common exception
       run: |
         python python/image.py
-#        pytest python/image.py

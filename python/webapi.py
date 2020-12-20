@@ -10,13 +10,40 @@ import re
 import urllib
 import time
 import hashlib
+
 arg = sys.argv
 
 
-class webapi():
-    def __init__(self, arg:list,iswrite:bool):
-        textWrite = True
-        text = ""
+def face() -> int:
+    r = random.randint(1, 666666666)
+    url = f"http://api.bilibili.com/x/space/acc/info?mid={r}"
+    o = loads(requests.get(url).text)
+    if o["code"] == (-404):
+        if not iswrite:
+            print(f"failed in {r}")
+        return -1
+    elif o["data"]["face"] == "http://i0.hdslb.com/bfs/face/member/noface.jpg":
+        if not iswrite:
+            print(f"failed in {r}")
+        return -1
+    else:
+        if iswrite:
+            with open(f"D:\\Program Source\\QQBOT\\python\\Temp\\Face\\{r}.jpg", "wb+") as f:
+                f.write(requests.get(o["data"]["face"]).content)
+        else:
+            print(f"success:{r}")
+        return r
+
+
+def faceqq():
+    return 0
+
+
+class webapi:
+    textWrite = True
+    text = ""
+
+    def __init__(self, arg: list, iswrite: bool):
         imageDict = {
             "": 1,
             "?": 2,
@@ -73,28 +100,24 @@ class webapi():
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.135 Safari/537.36 Edg/84.0.522.63'}
         if len(arg) == 3:
             if arg[1] == "ip":  # 根据ip看地址
-                url = "https://whois.pconline.com.cn/ip.jsp?ip="+arg[2]
-                text = requests.get(url)
-                text = text.text
-                text = text.replace("\r\n", "")
-                text = text.replace("\n", "")
-                text = text.replace(" ", "")
-#######################################################
+                url = "https://whois.pconline.com.cn/ip.jsp?ip=" + arg[2]
+                self.text = requests.get(url).text.replace("\r\n", "").replace("\n", "").replace(" ", "")
+            #######################################################
             elif arg[1] == "pos":  # 根据坐标看地址
                 position = arg[2].replace("，", ",")
-                url = "http://api.map.baidu.com/reverse_geocoding/v3/?ak=2qsQNbDMv4WTULwApsVu8IGl7hEr3p3W&output=json&coordtype=wgs84ll&location="+position
+                url = "http://api.map.baidu.com/reverse_geocoding/v3/?ak=2qsQNbDMv4WTULwApsVu8IGl7hEr3p3W&output=json&coordtype=wgs84ll&location=" + position
                 otext = requests.get(url)
                 outr = loads(otext.text)
                 if not outr["status"] == 0:
-                    text = outr["message"]
+                    self.text = outr["message"]
                 elif outr["result"]["addressComponent"]["country_code"] == -1:
-                    text = "暂不支持查找此地，例子：\n pos 39.983424,116.3229"
+                    self.text = "暂不支持查找此地，例子：\n pos 39.983424,116.3229"
                 else:
                     out = outr["result"]["addressComponent"]
-                    text = "位置： "+out["country"]+"  "+out["province"]+"  "+out["city"] + \
-                        " "+out["district"]+"\n"+"地址： " + \
-                        outr["result"]["formatted_address"]
-#######################################################
+                    self.text = "位置： " + out["country"] + "  " + out["province"] + "  " + out["city"] + \
+                                " " + out["district"] + "\n" + "地址： " + \
+                                outr["result"]["formatted_address"]
+            #######################################################
             elif arg[1] == "photo":  # 每日一图
                 url = "http://imagzine.oppomobile.com/api/slide_image/channel_image_list"
                 lists = [b"\x08\x01\x10\x01", b"\x08\x02\x10\x01", b"\x08\x03\x10\x01",
@@ -104,7 +127,7 @@ class webapi():
                     pst = random.choice(lists)
                 else:
                     try:
-                        if(len(arg[2]) == 1):
+                        if len(arg[2]) == 1:
                             pst = lists[int(arg[2])]
                         else:
                             if arg[2] in imageDict:
@@ -123,33 +146,33 @@ class webapi():
                         return
                 data = requests.post(url, pst).text
                 dt = data.split("android.intent.action.VIEW")
-                rd = random.randint(0, len(dt)-1)
+                rd = random.randint(0, len(dt) - 1)
                 # print(dt[rd])
                 dt = dt[rd].split("@")
-                if(len(dt) == 2):
+                if len(dt) == 2:
                     dt = dt[1][3:].split("Z�")
                 else:
                     self.text = "你真倒霉，服务器发来了一些我看不懂的东西"
                     self.textWrite = True
                     return
-                text = dt[0].split("R")
+                self.text = dt[0].split("R")
                 try:
-                    text = text[0]+"\n"+text[1][1:]
+                    self.text = self.text[0] + "\n" + self.text[1][1:]
                 except IndexError:
                     self.text = "你真倒霉，服务器发来了一些我看不懂的东西"
                     self.textWrite = True
                     return
-                img = ("http"+(dt[1][1:].split("zbhttp")[1])
-                       ).split(".jpg")[0]+".jpg"
-                ps = "D:\\Program Source\\QQBOT\\python\\Temp\\Photo\\%s.png" % text.replace(
+                img = ("http" + (dt[1][1:].split("zbhttp")[1])
+                       ).split(".jpg")[0] + ".jpg"
+                ps = "D:\\Program Source\\QQBOT\\python\\Temp\\Photo\\%s.png" % self.text.replace(
                     "\n", "_").replace("，", ",").replace("。", ".").replace("！", "!").replace("？", "")
                 if not (os.path.exists(ps)):
                     image = requests.get(img)
                     if iswrite:
                         with open(ps, "wb+") as f:
                             f.write(image.content)
-                text = ps+"|"+text
-#######################################################
+                self.text = ps + "|" + self.text
+            #######################################################
             elif arg[1] == "search":  # 搜索建议
                 urlBd = f"http://suggestion.baidu.com/su?wd={arg[2]}&action=opensearch&ie=UTF-8"
                 urlBing = f"http://cn.bing.com/AS/Suggestions?pt=page.home&mkt=zh-cn&ds=mobileweb&qry={arg[2]}&cp=2&cvid=86388E638B3C48DBA852C0BF46189C46"
@@ -161,15 +184,15 @@ class webapi():
                 sgSg = eval(requests.get(urlSg).text.replace(
                     "window.sogou.sug", "").replace(";", ""))[0][1]
                 sg360 = loads(requests.get(url360).text)["result"]
-                text = "这是%s的搜索建议：\n" % arg[2]
-                text += "-> 百度：\n"
+                self.text = "这是%s的搜索建议：\n" % arg[2]
+                self.text += "-> 百度：\n"
                 for bd in range(len(sgBd)):
                     if bd >= 10:
                         break
-                    text += sgBd[bd]
-                    if not bd+1 == len(sgBd):
-                        text += "，"
-                text += "\n-> 必应：\n"
+                    self.text += sgBd[bd]
+                    if not bd + 1 == len(sgBd):
+                        self.text += "，"
+                self.text += "\n-> 必应：\n"
                 for bing in range(len(sgBing)):
                     if bing >= 10:
                         break
@@ -177,38 +200,39 @@ class webapi():
                         continue
                     if sgBing[bing].get_text() == "国际版":
                         continue
-                    text += sgBing[bing].get_text()
-                    if not bing+1 == len(sgBing):
-                        text += "，"
-                text += "\n-> 搜狗：\n"
+                    self.text += sgBing[bing].get_text()
+                    if not bing + 1 == len(sgBing):
+                        self.text += "，"
+                self.text += "\n-> 搜狗：\n"
                 for sogou in range(len(sgSg)):
                     if sogou >= 10:
                         break
-                    text += sgSg[sogou]
-                    if not sogou+1 == len(sgSg):
-                        text += "，"
-                text += "\n-> 360搜索：\n"
+                    self.text += sgSg[sogou]
+                    if not sogou + 1 == len(sgSg):
+                        self.text += "，"
+                self.text += "\n-> 360搜索：\n"
                 for s360 in range(len(sg360)):
                     if s360 >= 10:
                         break
-                    text += sg360[s360]["word"]
-                    if not s360+1 == len(sg360):
-                        text += "，"
-#######################################################
+                    self.text += sg360[s360]["word"]
+                    if not s360 + 1 == len(sg360):
+                        self.text += "，"
+            #######################################################
             elif arg[1] == "baidu":  # 百度智能搜索
                 soup = BeautifulSoup(
-                    requests.get(f"http://www.baidu.com/s?wd={urllib.parse.quote(arg[2])}&ie=utf-8", headers=headersParameters).text, 
+                    requests.get(f"http://www.baidu.com/s?wd={urllib.parse.quote(arg[2])}&ie=utf-8",
+                                 headers=headersParameters).text,
                     features="html.parser")
                 soup = soup.findAll(
                     "div", attrs={"class": "op_exactqa_s_answer"})
                 if len(soup) == 0:
-                    text = "没有找到结果，功能优化中"
+                    self.text = "没有找到结果，功能优化中"
                 else:
                     try:
-                        text = soup[0].a.text.replace(" ", "").replace("\n", "")
+                        self.text = soup[0].a.text.replace(" ", "").replace("\n", "")
                     except AttributeError:
-                        text = soup[0].text.replace(" ", "").replace("\n", "")
-#######################################################
+                        self.text = soup[0].text.replace(" ", "").replace("\n", "")
+            #######################################################
             elif arg[1] == "news":  # 新闻相关搜索
                 if iswrite:
                     with open(r"D:\Program Source\QQBOT\python\Source\baiduapi.txt") as f:
@@ -216,46 +240,46 @@ class webapi():
                 else:
                     with open(r".\python\Source\baiduapi.txt") as f:
                         app = eval(f.read())[5]
-                urlNews = "http://index.baidu.com/Interface/Newwordgraph/getNews?"\
-                    "region=0&startdate=20200101&enddate=%s&wordlist[0]=%s" % (
-                        time.strftime("%Y%m%d", time.localtime()), arg[2])
+                urlNews = "http://index.baidu.com/Interface/Newwordgraph/getNews?" \
+                          "region=0&startdate=20200101&enddate=%s&wordlist[0]=%s" % (
+                              time.strftime("%Y%m%d", time.localtime()), arg[2])
                 cookir = {"BDUSS": app}
                 o = loads(requests.get(urlNews, cookies=cookir).text)
                 o = o["data"][0]["news"]
-                text = f"这是{arg[2]}的今年新闻：\n"
+                self.text = f"这是{arg[2]}的今年新闻：\n"
                 if len(o) == 0:
-                    text += "\n无相关新闻"
+                    self.text += "\n无相关新闻"
                 for i in range(len(o)):
-                    text = text + \
-                        o[i]["source"].split(
-                            " ")[1]+" "+o[i]["title"].replace("<em>", "").replace("</em>", "")
-                    if not i+1 == len(o):
-                        text += "\n"
-#######################################################
+                    self.text = self.text + \
+                                o[i]["source"].split(
+                                    " ")[1] + " " + o[i]["title"].replace("<em>", "").replace("</em>", "")
+                    if not i + 1 == len(o):
+                        self.text += "\n"
+            #######################################################
             elif arg[1] == "face":  # B站随机头像
-                textWrite = False
+                self.textWrite = False
                 if (arg[2] == "bilibili") | (arg[2] == "b"):
                     while True:
-                        out = self.face()
-                        if out is None:
+                        out = face()
+                        if out == -1:
                             pass
                         else:
                             break
-                    # print("D:\\0.png")
                     print(out)
                 elif (arg[2] == "qq") | (arg[2] == "q"):
                     while True:
-                        out = self.faceqq()
+                        out = faceqq()
                         if out == 1:
                             pass
                         else:
                             break
             elif arg[1] == "imageSearch":
                 url = "https://ai.baidu.com/aidemo"
-                info = loads(requests.post(
-                    url, data=f"image&image_url={arg[2]}&type=advanced_general&baike_num=1", headers=forBaiduHeader).text)
+                _ = loads(requests.post(
+                    url, data=f"image&image_url={arg[2]}&type=advanced_general&baike_num=1",
+                    headers=forBaiduHeader).text)
 
-#######################################################
+        #######################################################
         elif len(arg) == 4:
             if arg[1] == "trsWd":
                 if (arg[3] == "YouDao") | (arg[3] == "-"):  # 翻译单词
@@ -265,16 +289,15 @@ class webapi():
                         return
                     urlTs = f"http://dict.iciba.com/dictionary/word/suggestion?client=6&is_need_mean=1&nums=10&word={arg[2]}"
                     Ts = loads(requests.get(urlTs).text)
-                    text = f"这是{arg[2]}的相近词解释：\n"
+                    self.text = f"这是{arg[2]}的相近词解释：\n"
                     for i in Ts["message"]:
-                        text += f"{i['key']} ：{i['paraphrase']}\n"
-#######################################################
+                        self.text += f"{i['key']} ：{i['paraphrase']}\n"
+            #######################################################
             elif arg[1] == "zyb":  # 作业帮
                 urlBd = f"http://www.baidu.com/s?ie=UTF-8&wd=site:www.zybang.com%20{arg[2]}"
                 o = BeautifulSoup(requests.get(
                     urlBd, headers=headersParameters).text, features="html.parser")
-                link = o.findAll("h3", attrs={"class", "t"})[
-                    int(arg[3])].a["href"]
+                link = o.findAll("h3", attrs={"class", "t"})[int(arg[3])].a["href"]
                 zyb = BeautifulSoup(
                     re.sub("<br>|<br/>", "", requests.get(link).text), features="html.parser")
                 t = zyb.findAll(
@@ -296,63 +319,66 @@ class webapi():
                         with open(f"D:\\Program Source\\QQBOT\\python\\Temp\\Study\\{count}.jpg", "wb+") as f:
                             f.write(requests.get(tbs[i]["src"]).content)
                     else:
-                        endtext+=tbs[i]["src"]+"\n"
+                        endtext += tbs[i]["src"] + "\n"
                     count += 1
                 for j in range(len(ab)):
                     if iswrite:
                         with open(f"D:\\Program Source\\QQBOT\\python\\Temp\\Study\\{count}.jpg", "wb+") as f:
                             f.write(requests.get(ab[j]["src"]).content)
                     else:
-                        endtext+=ab[j]["src"]+"\n"
+                        endtext += ab[j]["src"] + "\n"
                     count += 1
-                text = title+"的答案是：\n"+answer
-                text = re.sub("&nbsp;", "", text)
-                text = re.sub("&amp;", "&", text)
-                text = re.sub("&gt;", ">", text)
-                if not iswrite and count != 0:text+=f"\nhave {count}'s image and this is the image's url:\n{endtext}"
-#######################################################
+                self.text = title + "的答案是：\n" + answer
+                self.text = re.sub("&nbsp;", "", self.text)
+                self.text = re.sub("&amp;", "&", self.text)
+                self.text = re.sub("&gt;", ">", self.text)
+                if not iswrite and count != 0:
+                    self.text += f"\nhave {count}'s image and this is the image's url:\n{endtext}"
+        #######################################################
         elif len(arg) == 2:
             if arg[1] == "math":  # 数学题
-                textWrite = False
+                self.textWrite = False
                 url = "http://e.anoah.com/api/?q=json/ebag/ValidateCode/getImageCode&info={\"uid\":\"114514\"}"
                 if iswrite:
                     with open(r"D:\Program Source\QQBOT\python\Temp\Math.png", "wb+") as f:
                         f.write(requests.get(url).content)
-#######################################################
-            elif arg[1] == "shop":  #买东西
-                url = "http://api.pinduoduo.com/api/byd/hydrogen/query?kyy_version=0.0.1&app_name=byd_market_mcard&scene_name=market_goods&offset=1&count=1&opt_id=0"
+            #######################################################
+            elif arg[1] == "shop":  # 买东西
+                url = "http://api.pinduoduo.com/api/byd/hydrogen/query?"\
+                      "kyy_version=0.0.1&app_name=byd_market_mcard&"\
+                      "scene_name=market_goods&offset=1&count=1&opt_id=0"
                 r = loads(requests.get(url).text)
                 imgurl = r["data"][0]["hd_thumb_url"]
                 goodsname = f"{r['data'][0]['goods_name']}  {r['data'][0]['short_name']}"
                 if 'ranking_list_tag' in r:
-                    text = f"{goodsname}|| {r['data'][0]['ranking_list_tag']['text']}"
+                    self.text = f"{goodsname}| {r['data'][0]['ranking_list_tag']['text']}"
                 else:
-                    text =f"{goodsname}||"
+                    self.text = f"{goodsname}|"
                 if iswrite:
-                    with open(r"D:\Program Source\QQBOT\python\Temp\shop.jpg","wb+") as f:
+                    with open(r"D:\Program Source\QQBOT\python\Temp\shop.jpg", "wb+") as f:
                         f.write(requests.get(imgurl).content)
-#######################################################
+            #######################################################
             elif arg[1] == "hot":  # 微博热搜
-                url = "http://api.weibo.cn/2/guest/page?"\
-                    "from=1781065010&c=wbfastapp&lang=zh_CN&count=20&containerid=106003type%3D25%26t%3D3%26"\
-                    "disable_hot%3D1%26filter_type%3Drealtimehot&lfid=OPPO_qjs"
+                url = "http://api.weibo.cn/2/guest/page?" \
+                      "from=1781065010&c=wbfastapp&lang=zh_CN&count=20&containerid=106003type%3D25%26t%3D3%26" \
+                      "disable_hot%3D1%26filter_type%3Drealtimehot&lfid=OPPO_qjs"
                 o = loads(requests.get(url).text)
                 o = o["cards"][0]["card_group"]
-                text = "微博热搜：\n"
+                self.text = "微博热搜：\n"
                 for i in range(len(o)):
-                    text += str(i+1)+" "+o[i]["desc"]+"\n"
-#######################################################
+                    self.text += str(i + 1) + " " + o[i]["desc"] + "\n"
+            #######################################################
             elif arg[1] == "hotword":  # B站热词
                 url = "http://s.search.bilibili.com/main/hotword"
                 o = loads(requests.get(url).text)["list"]
-                text = "B站热词：\n"
+                self.text = "B站热词：\n"
                 for i in range(len(o)):
-                    text = text+o[i]["keyword"]+"，"
-        if(len(arg) != 1):
+                    self.text = self.text + o[i]["keyword"] + "，"
+        if len(arg) != 1:
             ######################################################
             if arg[1] == "check":
                 s = ''.join(arg[2:])
-                textWrite = False
+                self.textWrite = False
                 url = "https://ai.baidu.com/aidemo"
                 head = forBaiduHeader
                 head["Referer"] = "https://ai.baidu.com/tech/textcensoring"
@@ -360,16 +386,17 @@ class webapi():
                 t = requests.post(url, tex, headers=head).text
                 t = t.encode("utf-8").decode("unicode_escape")
                 stri = loads(t)["data"]["result"]["reject"]
-                if(len(stri) == 0):
-                    text = "通过"
+                if len(stri) == 0:
+                    self.text = "通过"
                 else:
-                    text = labelDict[stri[0]["label"]]+"\n"+str(stri)
+                    self.text = labelDict[stri[0]["label"]] + "\n" + str(stri)
                 if iswrite:
                     with open(r"D:/Program Source/QQBOT/python/Temp/check.txt", "w+", encoding="UTF-8") as f:
-                        f.write(text)
+                        f.write(self.text)
+            ######################################################
             if arg[1] == "trs":
-                if (arg[2] == "粤语") | (arg[2] == "文言文") | (arg[2] == "文言文中文") | (arg[2] == "粤语中文") | (arg[3] == "b"):  # 翻译（百度）
-                    app = []
+                if (arg[2] == "粤语") | (arg[2] == "文言文") | (arg[2] == "文言文中文") | (arg[2] == "粤语中文") | (
+                        arg[3] == "b"):  # 翻译（百度）
                     if iswrite:
                         with open(r"D:\Program Source\QQBOT\python\Source\baiduapi.txt") as f:
                             app = eval(f.read())
@@ -380,27 +407,27 @@ class webapi():
                     secretKey = app[4]
                     fromLang = 'auto'
                     info = " ".join(arg[4:])
-                    if(arg[2] == "文言文中文"):
+                    toLang = trsBaiduDict[arg[2]]
+                    if arg[2] == "文言文中文":
                         fromLang = "wyw"
                         toLang = "zh"
-                    elif (arg[2] == "粤语中文"):
+                    elif arg[2] == "粤语中文":
                         fromLang = "yue"
                         toLang = "zh"
                     else:
-                        if (arg[2] not in trsBaiduDict):
+                        if arg[2] not in trsBaiduDict:
                             self.text = "错误的语言，尝试 help 百度翻译"
                             self.textWrite = True
                             return
-                    toLang = trsBaiduDict[arg[2]]
                     salt = random.randint(32768, 65536)
                     sign = appid + str(info) + str(salt) + secretKey
                     sign = hashlib.md5(sign.encode()).hexdigest()
                     # q=urllib.parse.quote(arg[3:])
                     myurl = f"http://api.fanyi.baidu.com/api/trans/vip/translate?appid={appid}&q={urllib.parse.quote(info)}&from={fromLang}&to={toLang}&salt={salt}&sign={sign}"
-                    text = loads(requests.get(myurl).text.encode(
+                    self.text = loads(requests.get(myurl).text.encode(
                         "utf-8").decode("unicode_escape"))["trans_result"][0]["dst"]
-    #######################################################
-                elif(arg[3] == "Google") | (arg[3] == "g") | (arg[3] == "1"):  # 翻译（谷歌）
+                #######################################################
+                elif (arg[3] == "Google") | (arg[3] == "g") | (arg[3] == "1"):  # 翻译（谷歌）
                     if arg[2] == "中文":
                         dest = "zh-cn"
                     elif arg[2] == "简体中文":
@@ -447,8 +474,8 @@ class webapi():
                         dest = "ar"
                     else:
                         if arg[2] not in LANGUAGES:
-                            self.text = "错误的语言，如需翻译文言文等中文变体请使用：\n 翻译 [需要翻译文本] 文言文\n文言文转中文请使用：翻译 [需要翻译文本] 文言文中文"\
-                                "\n空格请用+代替谢谢"
+                            self.text = "错误的语言，如需翻译文言文等中文变体请使用：\n 翻译 [需要翻译文本] 文言文\n文言文转中文请使用：翻译 [需要翻译文本] 文言文中文" \
+                                        "\n空格请用+代替谢谢"
                             self.textWrite = True
                             return
                         else:
@@ -456,59 +483,27 @@ class webapi():
                     trsor = Translator(service_urls=["translate.google.cn"])
                     inp = " ".join(arg[4:])
                     try:
-                        text = trsor.translate(inp, dest=dest).text
+                        self.text = trsor.translate(inp, dest=dest).text
                     except AttributeError:
-                        text = "谷歌翻译服务器的土豆可能发芽了"
+                        self.text = "谷歌翻译服务器的土豆可能发芽了"
             elif arg[1] == "trsmt":
                 pass  # 翻译20次生草机
-#######################################################
-        self.text = text
-        self.textWrite = textWrite
-#######################################################
 
-    def face(self) -> int:
-        r = random.randint(1, 666666666)
-        url = f"http://api.bilibili.com/x/space/acc/info?mid={r}"
-        o = loads(requests.get(url).text)
-        if o["code"] == (-404):
-            if not iswrite:print(f"failed in {r}")
-            return None
-        elif o["data"]["face"] == "http://i0.hdslb.com/bfs/face/member/noface.jpg":
-            if not iswrite:print(f"failed in {r}")
-            return None
-        else:
-            if iswrite:
-                with open(f"D:\\Program Source\\QQBOT\\python\\Temp\\Face\\{r}.jpg", "wb+") as f:
-                    f.write(requests.get(o["data"]["face"]).content)
-            else:
-                print(f"success:{r}")
-            return r
-
-    def faceqq(self):
-        return 0
 #######################################################
 
 
 if __name__ == "__main__":
-    iswrite=True
+    iswrite = True
     if "--diswrite-file" in arg:
-        iswrite=False
+        iswrite = False
         arg.remove("--diswrite-file")
         print("open the diswrite any file mode.")
         print(arg)
-    wb = webapi(arg,iswrite)
+    wb = webapi(arg, iswrite)
     try:
-        # wb=webapi(arg)
         text = wb.text
         textWrite = wb.textWrite
     except BaseException as e:
         text = e
         textWrite = True
-    if(False):
-        with open(r"D:\Program Source\QQBOT\python\Temp\temp.txt", "w+", encoding="UTF-8") as f:
-            if(textWrite):
-                text = str(text)
-                f.write(text)
-                print(text)
-    else:
-        print(text)
+    print(text)

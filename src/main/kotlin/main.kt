@@ -40,12 +40,14 @@ suspend fun main() {
     var type: MessageType?
     var photopath = ""
     var command = ""
+    /*
     miraiBot.getGroup(1074494974L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
     miraiBot.getGroup(830875502L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
     miraiBot.getGroup(1074494974L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
     miraiBot.getGroup(830875502L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
     miraiBot.getGroup(1019390914L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
     miraiBot.getGroup(1019390914L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
+    */
     miraiBot.subscribeAlways<BotInvitedJoinGroupRequestEvent> { event ->
         event.accept()
     }
@@ -53,7 +55,7 @@ suspend fun main() {
         event.accept()
     }
     miraiBot.subscribeAlways<MessageEvent> { event ->
-        type = null
+        type = MessageType.Common
         print(event.message[Image]?.queryUrl() + "\n")
         if ((event.sender as Member).group.id == 859089296L) return@subscribeAlways
         try {
@@ -165,14 +167,16 @@ suspend fun main() {
                     }
                     "shop", "买东西", "商品", "拼多多" -> {
                         type = MessageType.CodeDefineBySelf
-                        val r = "python $webapi shop".runExecute().split("||")
+                        val r = "python $webapi shop".runExecute().split("|")
+                        print(r)
                         reply("${r[0]}${r[1]}")
-                        File("D:\\Program Source\\QQBOT\\python\\Temp\\shop.jpg").sendAsImage()
+                        if ((event.sender as Member).group.id != 830875502L) File("D:\\Program Source\\QQBOT\\python\\Temp\\shop.jpg").sendAsImage()
                     }
                     "搜索建议", "idea", "search" -> {
                         type = MessageType.CodeDefineBySelf
                         reply("python $webapi search ${ct[1]}".runExecute()).recallIn(60000)
                     }
+
                     "baidu", "百度" -> command = "python $webapi baidu ${ct[1]}"
                     "hotword", "热词" -> command = "python $webapi hotword"
                     "在？" -> reply("在")
@@ -287,9 +291,7 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent()).recallIn(30000)
                         type = MessageType.CodeDefineBySelf
                         reply("python $webapi hot".runExecute()).recallIn(30000)
                     }
-                    else -> {
-                        type = null
-                    }
+                    else -> type = null
                 }
                 when (type) {
                     MessageType.Common -> {

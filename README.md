@@ -10,9 +10,9 @@
 
 ## 使用方法：
 
-### [webapi.py](https://github.com/awesomehhhhh/AwesomeBot/blob/master/python/webapi.py)
+### [webapi.py](python/webapi.py)
 
-- 在[这个](https://github.com/awesomehhhhh/AwesomeBot/blob/master/.github/workflows/python-package.yml)Github Actions的yml内有一些使用例子，仅需要取消`--diswrite-file`即可
+- 在[这个](.github/workflows/python-package.yml)Github Actions的yml内有一些使用例子，仅需要取消`--diswrite-file`即可
 
 ## （webapi）正在（计划）实现：  
 
@@ -29,13 +29,13 @@
 
 ## （webapi）已经实现：
 
-- [X] 拼多多买东西（[Py](python/webapi.py#L346),[Kt](src/main/kotlin/main.kt#L168)）（图片+文字描述，暂无链接）（仅用于观察营销号题目和图片用）
-- [X] 实时监测群内大于50次的消息是否存在广告、灌水等并t出
-- [X] 作业帮搜题（仅文字）（支持图文发送）  
+- [X] 拼多多买东西（[Py](python/webapi.py#L346)，[Kt](src/main/kotlin/main.kt#L168)）（图片+文字描述，暂无链接）（仅用于观察营销号题目和图片用）
+- [X] 实时监测群内大于50次的消息是否存在广告、灌水等并t出（[Py](python/webapi.py#L379)，[Kt](src/main/kotlin/main.kt#L318)）
+- [X] 作业帮搜题（[Py](python/webapi.py#L296)，[Kt](src/main/kotlin/main.kt#L120)）（仅文字）（支持图文发送）  
 - [X] 最近新闻（百度指数）  
 - [X] 百度智能搜索（连百度百科）  
 - [X] b站头像爬虫（随机头像）  
-- [X] b站热词  
+- [X] b站热词（[Py](python/webapi.py#L371)，[Kt](src/main/kotlin/main.kt#L181)）  
 - [X] 每日一图（锁屏杂志）（多主题已支持）  
 - [X] 搜索建议（百度，必应，360，搜狗搜索）  
 - [X] 翻译（谷歌翻译，百度）  

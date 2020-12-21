@@ -1,4 +1,5 @@
-# AwesomeBot（原ebagqbot，先已拆分为EbagUtil和AwesomeBot）
+# AwesomeBot
+*（原ebagqbot，先已拆分为EbagUtil和AwesomeBot）*
 **阿巴阿巴阿巴巴巴巴**
 
 ![Visitor](https://visitor-badge.glitch.me/badge?page_id=AwesomeBot)

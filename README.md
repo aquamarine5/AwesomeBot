@@ -38,14 +38,21 @@
 - [X] 百度智能搜索（连百度百科）  
 - [X] b站头像爬虫（随机头像）  
 - [X] b站热词（[Py](python/webapi.py#L371)，[Kt](src/main/kotlin/main.kt#L181)）  
-- [X] 每日一图（锁屏杂志）（多主题已支持）  
-- [X] 搜索建议（百度，必应，360，搜狗搜索）  
-- [X] 翻译（谷歌翻译，百度）  
+- [X] 每日亿图（锁屏杂志）（多主题已支持）  
+- [X] 搜索建议  
+- [X] 翻译  
 - [X] 翻译单词（爱词霸）  
 - [X] 热点分析（微博）  
 - [X] 翻译文言文（百度）  
 - [X] 根据经纬度确定位置（百度地图）  
 - [X] 根据IP看地点  
 
+## webapi.py中使用到的API来源
+- 翻译：[百度翻译开放平台](https://api.fanyi.baidu.com/api/trans/product/index)，[py-googletrans](https://github.com/ssut/py-googletrans)  
+- 热搜：微博  
+- 热词：B站  
+- 搜索建议：百度、必应、360、搜狗  
+- 锁屏杂志（图片）：OPPO（乐划锁屏）  
+- and more...
 ## 关于webyxp
 详见[此repo](https://github.com/awesomehhhhh/EbagUtil)

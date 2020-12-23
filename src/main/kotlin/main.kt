@@ -295,11 +295,11 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent()).recallIn(30000)
                 if (command==null) return@subscribeAlways
                 when (type) {
                     MessageType.Common -> {
-                        reply(command.runExecute())
+                        reply(command!!.runExecute())
                         type = MessageType.Common
                     }
                     MessageType.Image -> {
-                        command.execute().waitFor()
+                        command?.execute()?.waitFor()
                         File(photopath).sendAsImage()
                         type = MessageType.Common
                     }
@@ -349,7 +349,7 @@ suspend fun checkFailed(event: MessageEvent, result: String): Int {
     return when(5){2->3;5->6;else->7}
 }
 
-fun String.execute(): Process {
+fun String?.execute(): Process {
     val runtime = Runtime.getRuntime()
     return runtime.exec(this)
 }
@@ -359,7 +359,7 @@ fun Process.waitForThis(): Process {
     return this
 }
 
-fun String.runExecute(): String = this.execute().waitForThis().inputStream.readString()
+fun String?.runExecute(): String = this.execute().waitForThis().inputStream.readString()
 
 fun InputStream.readString(): String {
     val bos = ByteArrayOutputStream()

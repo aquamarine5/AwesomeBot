@@ -39,15 +39,14 @@ suspend fun main() {
     }.alsoLogin()
     var type: MessageType?
     var photopath = ""
-    var command = ""
-    /*
+    var command:String?=null
     miraiBot.getGroup(1074494974L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
     miraiBot.getGroup(830875502L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
     miraiBot.getGroup(1074494974L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
     miraiBot.getGroup(830875502L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
     miraiBot.getGroup(1019390914L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
     miraiBot.getGroup(1019390914L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
-    */
+
     miraiBot.subscribeAlways<BotInvitedJoinGroupRequestEvent> { event ->
         event.accept()
     }
@@ -293,6 +292,7 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent()).recallIn(30000)
                     }
                     else -> type = null
                 }
+                if (command==null) return@subscribeAlways
                 when (type) {
                     MessageType.Common -> {
                         reply(command.runExecute())
@@ -303,7 +303,6 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent()).recallIn(30000)
                         File(photopath).sendAsImage()
                         type = MessageType.Common
                     }
-
                 }
             }
         } catch (e: Exception) {
@@ -338,7 +337,7 @@ suspend fun check(event: MessageEvent): Boolean {
     }
 }
 
-suspend fun checkFailed(event: MessageEvent, result: String) {
+suspend fun checkFailed(event: MessageEvent, result: String): Int {
     try {
         //(event.sender as Member).kick("Bot测试")
     } catch (err: PermissionDeniedException) {
@@ -347,6 +346,7 @@ suspend fun checkFailed(event: MessageEvent, result: String) {
         event.reply(At(event.sender as Member) + "有违禁信息\n原因：$result")
     }
     File(elog).writeText(File(elog).readText() + "\n" + event.senderName + " " + event.message.content)
+    return when(5){2->3;5->6;else->7}
 }
 
 fun String.execute(): Process {

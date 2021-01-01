@@ -1,0 +1,3 @@
+[submodule "python\\EbagUtil"]
+	path = python\\EbagUtil
+	url = https://github.com/awesomehhhhh/EbagUtil

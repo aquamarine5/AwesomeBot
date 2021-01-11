@@ -288,8 +288,9 @@ class webapi:
                 except decoder.JSONDecodeError:
                     self.text="暂时不支持动图（GIF）。"
                     return
-                self.text = f'检测结果前五是：{data[0]["keyword"]}（{round(float(data[0]["score"])*100,2)}%），{data[1]["keyword"]}，'\
-                    f'{data[2]["keyword"]}，{data[3]["keyword"]}，{data[4]["keyword"]}'
+                self.text = f'检测结果前五是：{data[0]["keyword"]}（{round(float(data[0]["score"])*100,2)}%），{data[1]["keyword"]}（{round(float(data[1]["score"])*100,2)}%），'\
+                    f'{data[2]["keyword"]}（{round(float(data[2]["score"])*100,2)}%），{data[3]["keyword"]}'\
+                    f'（{round(float(data[3]["score"])*100,2)}%），{data[4]["keyword"]}（{round(float(data[4]["score"])*100,2)}%）'
         #######################################################
         elif len(arg) == 4:
             if arg[1] == "trsWd":

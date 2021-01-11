@@ -15,7 +15,7 @@ import java.lang.Exception
 import java.lang.IndexOutOfBoundsException
 
 const val program = "\"d:/Program Source/QQBOT/python/webyxp.py\""
-const val webapi = "\"d:/Program Source/QQBOT/python/webapi.py\""
+const val webapi = "\"d:\\Program Source\\AwesomeBot\\python\\webapi.py\""
 const val func = "\"d:/Program Source/QQBOT/python/func.py\""
 const val image = "\"d:/Program Source/QQBOT/python/image.py\""
 const val temp = "D:/Program Source/QQBOT/python/Temp/temp.txt"
@@ -62,8 +62,13 @@ suspend fun main() {
         print(event.message[Image]?.queryUrl() + "\n")
         if ((event.sender as Member).group.id == 859089296L) return@subscribeAlways
         if (isWaiting && event.message[Image]?.queryUrl() != null) {
+            print(waitGroupMember)
             if (event.sender.id == waitGroupMember && (event.sender as Member).group.id == waitGroup) {
+                print("python $webapi image_search ${event.message[Image]?.queryUrl()}")
                 reply("python $webapi image_search ${event.message[Image]?.queryUrl()}".runExecute())
+                isWaiting=false
+                waitGroup=null
+                waitGroupMember=null
             }
         }
         try {

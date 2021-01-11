@@ -62,18 +62,18 @@ suspend fun main() {
         print(event.message[Image]?.queryUrl() + "\n")
         if ((event.sender as Member).group.id == 859089296L) return@subscribeAlways
         if (isWaiting) {
-            if(event.message[Image]?.queryUrl() != null){
-                if (event.sender.id == waitGroupMember && (event.sender as Member).group.id == waitGroup) {
+            if (event.sender.id == waitGroupMember && (event.sender as Member).group.id == waitGroup) {
+                if (event.message[Image]?.queryUrl() != null) {
                     reply("python $webapi image_search ${event.message[Image]?.queryUrl()}".runExecute())
-                    isWaiting=false
-                    waitGroup=null
-                    waitGroupMember=null
+                    isWaiting = false
+                    waitGroup = null
+                    waitGroupMember = null
+                } else {
+                    reply("已取消图片识别。")
+                    isWaiting = false
+                    waitGroup = null
+                    waitGroupMember = null
                 }
-            }else{
-                reply("已取消图片识别。")
-                isWaiting=false
-                waitGroup=null
-                waitGroupMember=null
             }
         }
         try {
@@ -362,7 +362,7 @@ suspend fun check(event: MessageEvent): Boolean {
     }
 }
 
-suspend fun checkFailed(event: MessageEvent, result: String){
+suspend fun checkFailed(event: MessageEvent, result: String) {
     try {
         //(event.sender as Member).kick("Bot测试")
     } catch (err: PermissionDeniedException) {

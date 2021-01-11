@@ -101,7 +101,8 @@ class webapi:
         if len(arg) == 3:
             if arg[1] == "ip":  # 根据ip看地址
                 url = "https://whois.pconline.com.cn/ip.jsp?ip=" + arg[2]
-                self.text = requests.get(url).text.replace("\r\n", "").replace("\n", "").replace(" ", "")
+                self.text = requests.get(url).text.replace(
+                    "\r\n", "").replace("\n", "").replace(" ", "")
             #######################################################
             elif arg[1] == "pos":  # 根据坐标看地址
                 position = arg[2].replace("，", ",")
@@ -229,9 +230,11 @@ class webapi:
                     self.text = "没有找到结果，功能优化中"
                 else:
                     try:
-                        self.text = soup[0].a.text.replace(" ", "").replace("\n", "")
+                        self.text = soup[0].a.text.replace(
+                            " ", "").replace("\n", "")
                     except AttributeError:
-                        self.text = soup[0].text.replace(" ", "").replace("\n", "")
+                        self.text = soup[0].text.replace(
+                            " ", "").replace("\n", "")
             #######################################################
             elif arg[1] == "news":  # 新闻相关搜索
                 if iswrite:
@@ -251,8 +254,8 @@ class webapi:
                     self.text += "\n无相关新闻"
                 for i in range(len(o)):
                     self.text = self.text + \
-                                o[i]["source"].split(
-                                    " ")[1] + " " + o[i]["title"].replace("<em>", "").replace("</em>", "")
+                        o[i]["source"].split(
+                            " ")[1] + " " + o[i]["title"].replace("<em>", "").replace("</em>", "")
                     if not i + 1 == len(o):
                         self.text += "\n"
             #######################################################
@@ -274,14 +277,14 @@ class webapi:
                         else:
                             break
             #######################################################
-            elif arg[1] == "image_search": # 图片搜索
+            elif arg[1] == "image_search":  # 图片搜索
                 url = "https://ai.baidu.com/aidemo"
-                baiduHeader=forBaiduHeader.copy()
-                baiduHeader["Referer"]="https://ai.baidu.com/tech/imagerecognition/general"
+                baiduHeader = forBaiduHeader.copy()
+                baiduHeader["Referer"] = "https://ai.baidu.com/tech/imagerecognition/general"
                 data = loads(requests.post(
                     url, data=f"image&image_url={arg[2]}&type=advanced_general&baike_num=1",
                     headers=baiduHeader).text)["data"]["result"]
-                self.text=f'检测结果前五是：{data[0]["keyword"]}（{round(float(data[0]["score"])*100,2)}%），{data[1]["keyword"]}，'\
+                self.text = f'检测结果前五是：{data[0]["keyword"]}（{round(float(data[0]["score"])*100,2)}%），{data[1]["keyword"]}，'\
                     f'{data[2]["keyword"]}，{data[3]["keyword"]}，{data[4]["keyword"]}'
         #######################################################
         elif len(arg) == 4:
@@ -301,7 +304,8 @@ class webapi:
                 urlBd = f"http://www.baidu.com/s?ie=UTF-8&wd=site:www.zybang.com%20{arg[2]}"
                 o = BeautifulSoup(requests.get(
                     urlBd, headers=headersParameters).text, features="html.parser")
-                link = o.findAll("h3", attrs={"class", "t"})[int(arg[3])].a["href"]
+                link = o.findAll("h3", attrs={"class", "t"})[
+                    int(arg[3])].a["href"]
                 zyb = BeautifulSoup(
                     re.sub("<br>|<br/>", "", requests.get(link).text), features="html.parser")
                 t = zyb.findAll(
@@ -313,7 +317,8 @@ class webapi:
                 title = re.sub(r"<br>|</br>", "\n", title)
                 title = re.sub(r'<(.*?)>', "", title)
                 ab = answer.findAll("img")
-                answer = re.sub(r"<img(.*?)>|<img(.*?)/>", "{img}", str(answer))
+                answer = re.sub(r"<img(.*?)>|<img(.*?)/>",
+                                "{img}", str(answer))
                 answer = re.sub(r"<br>|</br>", "\n", answer)
                 answer = re.sub(r'<(.*?)>', "", answer)
                 count = 0

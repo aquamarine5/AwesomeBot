@@ -32,6 +32,7 @@
 ## （webapi）已经实现：
 
 - [X] 拼多多买东西（[Py](python/webapi.py#L346)，[Kt](src/main/kotlin/main.kt#L168)）（图片+文字描述，暂无链接）（仅用于观察营销号题目和图片用）
+- [X] 图片识别（[Py](python/webapi.py#L280)，[Kt1](src/main/kotlin/main.kt#L66)，[Kt2](src/main/kotlin/main.kt#L157)）
 - [X] 实时监测群内大于50次的消息是否存在广告、灌水等并t出（[Py](python/webapi.py#L379)，[Kt](src/main/kotlin/main.kt#L318)）
 - [X] 作业帮搜题（[Py](python/webapi.py#L296)，[Kt](src/main/kotlin/main.kt#L120)）（仅文字）（支持图文发送）  
 - [X] 最近新闻（百度指数）  

@@ -273,12 +273,16 @@ class webapi:
                             pass
                         else:
                             break
-            elif arg[1] == "imageSearch":
+            #######################################################
+            elif arg[1] == "image_search": # 图片搜索
                 url = "https://ai.baidu.com/aidemo"
-                _ = loads(requests.post(
+                baiduHeader=forBaiduHeader.copy()
+                baiduHeader["Referer"]="https://ai.baidu.com/tech/imagerecognition/general"
+                data = loads(requests.post(
                     url, data=f"image&image_url={arg[2]}&type=advanced_general&baike_num=1",
-                    headers=forBaiduHeader).text)
-
+                    headers=baiduHeader).text)["data"]["result"]
+                self.text=f'检测结果前五是：{data[0]["keyword"]}（{round(float(data[0]["score"])*100,2)}%），{data[1]["keyword"]}，'\
+                    f'{data[2]["keyword"]}，{data[3]["keyword"]}，{data[4]["keyword"]}'
         #######################################################
         elif len(arg) == 4:
             if arg[1] == "trsWd":

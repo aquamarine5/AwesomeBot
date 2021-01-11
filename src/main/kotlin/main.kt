@@ -61,11 +61,16 @@ suspend fun main() {
         type = MessageType.Common
         print(event.message[Image]?.queryUrl() + "\n")
         if ((event.sender as Member).group.id == 859089296L) return@subscribeAlways
-        if (isWaiting && event.message[Image]?.queryUrl() != null) {
-            print(waitGroupMember)
-            if (event.sender.id == waitGroupMember && (event.sender as Member).group.id == waitGroup) {
-                print("python $webapi image_search ${event.message[Image]?.queryUrl()}")
-                reply("python $webapi image_search ${event.message[Image]?.queryUrl()}".runExecute())
+        if (isWaiting) {
+            if(event.message[Image]?.queryUrl() != null){
+                if (event.sender.id == waitGroupMember && (event.sender as Member).group.id == waitGroup) {
+                    reply("python $webapi image_search ${event.message[Image]?.queryUrl()}".runExecute())
+                    isWaiting=false
+                    waitGroup=null
+                    waitGroupMember=null
+                }
+            }else{
+                reply("已取消图片识别。")
                 isWaiting=false
                 waitGroup=null
                 waitGroupMember=null

@@ -39,11 +39,15 @@ suspend fun main() {
     }.alsoLogin()
     var type: MessageType?
     var photopath = ""
-    var command:String?=null
+    var command: String? = null
+    var isWaiting = false
+    var waitGroup: Long? = null
+    var waitGroupMember: Long? = null
+
     miraiBot.getGroup(1074494974L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
-    miraiBot.getGroup(830875502L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
+    //miraiBot.getGroup(830875502L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
     miraiBot.getGroup(1074494974L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
-    miraiBot.getGroup(830875502L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
+    //miraiBot.getGroup(830875502L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
     miraiBot.getGroup(1019390914L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
     miraiBot.getGroup(1019390914L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
 
@@ -57,6 +61,11 @@ suspend fun main() {
         type = MessageType.Common
         print(event.message[Image]?.queryUrl() + "\n")
         if ((event.sender as Member).group.id == 859089296L) return@subscribeAlways
+        if (isWaiting && event.message[Image]?.queryUrl() != null) {
+            if (event.sender.id == waitGroupMember && (event.sender as Member).group.id == waitGroup) {
+                reply("python $webapi image_search ${event.message[Image]?.queryUrl()}".runExecute())
+            }
+        }
         try {
             val message = event.message.content
             if (!check(event)) return@subscribeAlways
@@ -133,6 +142,12 @@ suspend fun main() {
                                 }
                             }
                         }.send()
+                    }
+                    "image", "图片识别" -> {
+                        reply("请发送图片，发送文字即取消识别")
+                        isWaiting = true
+                        waitGroup = (event.sender as Member).group.id
+                        waitGroupMember = event.sender.id
                     }
                     "trsWd", "翻译单词", "trswd" -> {
                         val engine: String = if (ct.size == 2) {
@@ -292,7 +307,7 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent()).recallIn(30000)
                     }
                     else -> type = null
                 }
-                if (command==null) return@subscribeAlways
+                if (command == null) return@subscribeAlways
                 when (type) {
                     MessageType.Common -> {
                         reply(command!!.runExecute())
@@ -337,7 +352,7 @@ suspend fun check(event: MessageEvent): Boolean {
     }
 }
 
-suspend fun checkFailed(event: MessageEvent, result: String): Int {
+suspend fun checkFailed(event: MessageEvent, result: String){
     try {
         //(event.sender as Member).kick("Bot测试")
     } catch (err: PermissionDeniedException) {
@@ -346,7 +361,6 @@ suspend fun checkFailed(event: MessageEvent, result: String): Int {
         event.reply(At(event.sender as Member) + "有违禁信息\n原因：$result")
     }
     File(elog).writeText(File(elog).readText() + "\n" + event.senderName + " " + event.message.content)
-    return when(5){2->3;5->6;else->7}
 }
 
 fun String?.execute(): Process {

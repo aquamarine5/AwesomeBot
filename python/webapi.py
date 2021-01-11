@@ -1,6 +1,6 @@
 import sys
 import requests
-from json import loads
+from json import loads,decoder
 from googletrans import Translator
 from googletrans.constants import (LANGUAGES)
 from bs4 import BeautifulSoup
@@ -281,9 +281,13 @@ class webapi:
                 url = "https://ai.baidu.com/aidemo"
                 baiduHeader = forBaiduHeader.copy()
                 baiduHeader["Referer"] = "https://ai.baidu.com/tech/imagerecognition/general"
-                data = loads(requests.post(
-                    url, data=f"image&image_url={arg[2]}&type=advanced_general&baike_num=1",
-                    headers=baiduHeader).text)["data"]["result"]
+                try:
+                    data = loads(requests.post(
+                        url, data=f"image&image_url={arg[2]}&type=advanced_general&baike_num=1",
+                        headers=baiduHeader).text)["data"]["result"]
+                except decoder.JSONDecodeError:
+                    self.text="暂时不支持动图（GIF）。"
+                    return
                 self.text = f'检测结果前五是：{data[0]["keyword"]}（{round(float(data[0]["score"])*100,2)}%），{data[1]["keyword"]}，'\
                     f'{data[2]["keyword"]}，{data[3]["keyword"]}，{data[4]["keyword"]}'
         #######################################################

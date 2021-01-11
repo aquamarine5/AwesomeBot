@@ -86,7 +86,7 @@ jobs:
         python python/webapi.py --diswrite-file photo -1
     - name: Test webapi.py in command -> image_search
       run: |
-        python python/webapi.oy --diswrite-file image_search http://gchat.qpic.cn/gchatpic_new/3168287806/1019390914-2932721587-32A831A71CB9DA4AF3185AF882E1C7B4/0?term=2 
+        python python/webapi.py --diswrite-file image_search http://gchat.qpic.cn/gchatpic_new/3168287806/1019390914-2932721587-32A831A71CB9DA4AF3185AF882E1C7B4/0?term=2 
     - name: Test webyxp.py common exception
       run: |
         python python/webyxp.py

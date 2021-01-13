@@ -1,5 +1,5 @@
 # AwesomeBot
-*（原ebagqbot，先已拆分为EbagUtil和AwesomeBot）*
+*（原ebagqbot，先已拆分为EbagUtil和AwesomeBot）*  
 一个QQ机器人，QQ机器人号：*924410958*，本人号*316828780x*（x是一个`int`）
 
 **阿巴阿巴阿巴巴巴巴**

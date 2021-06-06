@@ -1,16 +1,18 @@
-import net.mamoe.mirai.Bot
+import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.alsoLogin
-import net.mamoe.mirai.event.*
-import net.mamoe.mirai.join
-import net.mamoe.mirai.message.*
-import net.mamoe.mirai.message.data.*
-import net.mamoe.mirai.contact.PermissionDeniedException
-import kotlinx.coroutines.InternalCoroutinesApi
+import net.mamoe.mirai.contact.Contact
+import net.mamoe.mirai.contact.Contact.Companion.sendImage
 import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
-import net.mamoe.mirai.event.events.NewFriendRequestEvent
+import net.mamoe.mirai.contact.PermissionDeniedException
+import net.mamoe.mirai.event.events.MessageEvent
+import net.mamoe.mirai.message.MessageReceipt
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.utils.BotConfiguration
-import java.io.*
+import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsImage
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.InputStream
 import java.lang.Exception
 import java.lang.IndexOutOfBoundsException
 
@@ -23,46 +25,50 @@ const val elog = "D:/Program Source/QQBOT/python/Temp/t.log"
 const val imageTemp = "D:/Program Source/QQBOT/python/Temp/temp.jpg"
 const val imageMath = "D:/Program Source/QQBOT/python/Temp/Math.png"
 const val imagePrivate = "D:/Program Source/QQBOT/python/Temp/FacePrivate.jpg"
-
 enum class MessageType {
     CodeDefineBySelf, Common, Image
 }
 
-@InternalCoroutinesApi
 suspend fun main() {
-
-    val qqId = 924410958L//Bot的QQ号，需为Long类型，在结尾处添加大写L
-    val password = File("D:/Program Source/QQBOT/password.txt").readText()//Bot的密码
-    val miraiBot = Bot(qqId, password) {
+    val bot=BotFactory.newBot(924410958,File("password.txt").readText(), BotConfiguration {
         fileBasedDeviceInfo("device.json")
-        protocol = BotConfiguration.MiraiProtocol.ANDROID_PHONE
-    }.alsoLogin()
+        protocol= BotConfiguration.MiraiProtocol.ANDROID_PAD
+    }).alsoLogin()
     var type: MessageType?
     var photopath = ""
     var command: String? = null
     var isWaiting = false
     var waitGroup: Long? = null
     var waitGroupMember: Long? = null
+    bot.eventChannel.subscribeAlways<MessageEvent> { event ->
+        /**
+        * 兼容mirai 1.3.3 (reply())
+        */
+        suspend fun reply(s: MessageChain):MessageReceipt<Contact>{
+            return event.subject.sendMessage(s)
+        }
+        suspend fun reply(s:String):MessageReceipt<Contact>{
+            return event.subject.sendMessage(s)
+        }
 
-    miraiBot.getGroup(1074494974L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
-    //miraiBot.getGroup(830875502L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
-    miraiBot.getGroup(1074494974L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
-    //miraiBot.getGroup(830875502L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
-    miraiBot.getGroup(1019390914L).sendMessage("qq bot start on all group,and will recall in 10 second.").recallIn(30000)
-    miraiBot.getGroup(1019390914L).sendMessage("https://github.com/awesomehhhhh/AwesomeBot").recallIn(30000)
+        /**
+         * 兼容mirai 1.3.3 (File.sendAsImage())
+         */
+        suspend fun File.sendAsImage(){
+            event.subject.sendImage(this)
+        }
 
-    miraiBot.subscribeAlways<BotInvitedJoinGroupRequestEvent> { event ->
-        event.accept()
-    }
-    miraiBot.subscribeAlways<NewFriendRequestEvent> { event ->
-        event.accept()
-    }
-    miraiBot.subscribeAlways<MessageEvent> { event ->
+        /**
+         * 兼容mirai 1.3.3 (buildMessageChain.add(uploadImage()))
+         */
+        suspend fun uploadImage(f:File):Image{
+            return f.uploadAsImage(event.subject)
+        }
         type = MessageType.Common
         print(event.message[Image]?.queryUrl() + "\n")
-        if ((event.sender as Member).group.id == 859089296L) return@subscribeAlways
+        if (event.source.fromId == 859089296L) return@subscribeAlways
         if (isWaiting) {
-            if (event.sender.id == waitGroupMember && (event.sender as Member).group.id == waitGroup) {
+            if (event.sender.id == waitGroupMember && event.source.fromId == waitGroup) {
                 if (event.message[Image]?.queryUrl() != null) {
                     reply("python $webapi image_search ${event.message[Image]?.queryUrl()}".runExecute())
                     isWaiting = false
@@ -78,7 +84,7 @@ suspend fun main() {
         }
         try {
             val message = event.message.content
-            if (!check(event)) return@subscribeAlways
+            //if (!check(event)) return@subscribeAlways
             if (message == "机器人 off") {
                 reply(At(event.sender as Member) + " 呜呜呜有人要关我")
                 return@subscribeAlways
@@ -96,7 +102,7 @@ suspend fun main() {
                     }
                     "yxpPic", "yxppic", "yxp照片" -> {
                         type = MessageType.CodeDefineBySelf
-                        "python $program yxpPic ${ct[1]}".execute().waitFor()
+                        "python $program yxpPic ${ct[1]}".runExecute()
                         val file = File(temp).readText()
                         if (file == "") {
                             reply("用户不存在")
@@ -105,7 +111,7 @@ suspend fun main() {
                             buildMessageChain {
                                 add("这是 优学派用户 e${ct[1].toInt()}（$file） 的头像\n")
                                 add(uploadImage(File(imagePrivate)))
-                            }.send()
+                            }.sendTo(event.subject)
                         }
                     }
                     "yxpHW", "yxp作业", "yxpHw", "yxp作业完成" -> {
@@ -141,17 +147,17 @@ suspend fun main() {
                         val msg = "python $webapi zyb ${ct[1]} $num".runExecute().split("{img}")
                         buildMessageChain {
                             if (msg.size == 1) {
-                                add(msg[0])
+                                +msg[0]
                             } else {
                                 for ((index, m) in msg.withIndex()) {
-                                    add(m)
+                                    +m
                                     if (msg.size != (index + 1)) {
-                                        add(uploadImage(File("D:\\Program Source\\QQBOT\\python\\Temp\\Study\\$index.jpg")))
+                                        +uploadImage(File("D:\\Program Source\\QQBOT\\python\\Temp\\Study\\$index.jpg"))
                                     }
 
                                 }
                             }
-                        }.send()
+                        }.sendTo(event.subject)
                     }
                     "image", "图片识别" -> {
                         reply("请发送图片，发送文字即取消识别")
@@ -194,7 +200,7 @@ suspend fun main() {
                         val r = "python $webapi shop".runExecute().split("|")
                         print(r)
                         reply("${r[0]}${r[1]}")
-                        if ((event.sender as Member).group.id != 830875502L) File("D:\\Program Source\\QQBOT\\python\\Temp\\shop.jpg").sendAsImage()
+                        if (event.source.fromId != 830875502L) File("D:\\Program Source\\QQBOT\\python\\Temp\\shop.jpg").sendAsImage()
                     }
                     "搜索建议", "idea", "search" -> {
                         type = MessageType.CodeDefineBySelf
@@ -324,7 +330,7 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent()).recallIn(30000)
                         type = MessageType.Common
                     }
                     MessageType.Image -> {
-                        command?.execute()?.waitFor()
+                        command!!.runExecute()
                         File(photopath).sendAsImage()
                         type = MessageType.Common
                     }
@@ -335,8 +341,7 @@ yxp老师评语 uid ->返回uid作业评语""".trimIndent()).recallIn(30000)
             e.printStackTrace()
         }
     }
-
-    miraiBot.join() // 等待 机器人 离线, 避免主线程退出
+    bot.join()
 }
 
 suspend fun check(event: MessageEvent): Boolean {
@@ -366,9 +371,9 @@ suspend fun checkFailed(event: MessageEvent, result: String) {
     try {
         //(event.sender as Member).kick("Bot测试")
     } catch (err: PermissionDeniedException) {
-        event.reply(At(event.sender as Member) + "有违禁信息但权限原因无法踢走\n原因：$result")
+        event.subject.sendMessage(At(event.sender as Member) + "有违禁信息但权限原因无法踢走\n原因：$result")
     } finally {
-        event.reply(At(event.sender as Member) + "有违禁信息\n原因：$result")
+        event.subject.sendMessage(At(event.sender as Member) + "有违禁信息\n原因：$result")
     }
     File(elog).writeText(File(elog).readText() + "\n" + event.senderName + " " + event.message.content)
 }

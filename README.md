@@ -1,6 +1,10 @@
 # AwesomeBot
 *（原ebagqbot，先已拆分为EbagUtil和AwesomeBot）*  
-一个QQ机器人，QQ机器人号：*924410958*，本人号*316828780x*（x是一个`int`）
+[![GitHub repo size](https://img.shields.io/github/repo-size/awesomehhhhh/AwesomeBot)](https://github.com/awesomehhhhh/AwesomeBot)
+[![Commit Activity](https://img.shields.io/github/commit-activity/m/awesomehhhhh/AwesomeBot)]()
+[![Last commit](https://img.shields.io/github/last-commit/awesomehhhhh/AwesomeBot)]()
+[![Release date](https://img.shields.io/github/release-date-pre/awesomehhhhh/AwesomeBot)]()
+[![Download count](https://img.shields.io/github/downloads/awesomehhhhh/AwesomeBot/total)]()
 
 **阿巴阿巴阿巴巴巴巴**
 

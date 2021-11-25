@@ -3,12 +3,10 @@
 [![GitHub repo size](https://img.shields.io/github/repo-size/awesomehhhhh/AwesomeBot)](https://github.com/awesomehhhhh/AwesomeBot)
 [![Commit Activity](https://img.shields.io/github/commit-activity/m/awesomehhhhh/AwesomeBot)]()
 [![Last commit](https://img.shields.io/github/last-commit/awesomehhhhh/AwesomeBot)]()
-[![Release date](https://img.shields.io/github/release-date-pre/awesomehhhhh/AwesomeBot)]()
+![Visitor](https://visitor-badge.glitch.me/badge?page_id=AwesomeBot)
 [![Download count](https://img.shields.io/github/downloads/awesomehhhhh/AwesomeBot/total)]()
 
 **阿巴阿巴阿巴巴巴巴**
-
-![Visitor](https://visitor-badge.glitch.me/badge?page_id=AwesomeBot)
 
 > ebag yxp代码：[webyxp.py](https://github.com/awesomehhhhh/EbagUtil)  
 > 网络爬虫 代码：webapi.py  

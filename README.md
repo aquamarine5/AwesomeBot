@@ -4,7 +4,6 @@
 [![Commit Activity](https://img.shields.io/github/commit-activity/m/awesomehhhhh/AwesomeBot)]()
 [![Last commit](https://img.shields.io/github/last-commit/awesomehhhhh/AwesomeBot)]()
 ![Visitor](https://visitor-badge.glitch.me/badge?page_id=AwesomeBot)
-[![Download count](https://img.shields.io/github/downloads/awesomehhhhh/AwesomeBot/total)]()
 
 **阿巴阿巴阿巴巴巴巴**
 

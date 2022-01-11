@@ -1,5 +1,6 @@
 # AwesomeBot
-*（原ebagqbot，先已拆分为EbagUtil和AwesomeBot）*  
+*（原ebagqbot，先已拆分为YouxuepaiUtil和AwesomeBot）  
+关于YouxuepaiUtil（优学派）的更多信息，请跳转至[YouxuepaiUtil](github.com/awesomehhhhh/YouxuepaiUtil)库*  
 [![GitHub repo size](https://img.shields.io/github/repo-size/awesomehhhhh/AwesomeBot)](https://github.com/awesomehhhhh/AwesomeBot)
 [![Commit Activity](https://img.shields.io/github/commit-activity/m/awesomehhhhh/AwesomeBot)]()
 [![Last commit](https://img.shields.io/github/last-commit/awesomehhhhh/AwesomeBot)]()

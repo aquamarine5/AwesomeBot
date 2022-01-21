@@ -13,7 +13,8 @@
 > qqbot机器人实现：main.kt  
 > qqbot基于：[mirai](https://github.com/mamoe/mirai)
 ## 使用须知：
-- **AwesomeBot 在2021/09/11进行重写，敬请期待。**
+- ~~*AwesomeBot 在2021/09/11进行重写，敬请期待。*~~
+- *可以暂时不用期待了。*
 ## 使用方法：
 
 ### [webapi.py](python/webapi.py)
